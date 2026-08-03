@@ -19,7 +19,7 @@ const allowedOrigins = [
   'http://localhost:4000', // admin frontend (local)
   'http://localhost:5000', // kiosk client frontend (local)
   'https://kiosk-adminpanel.netlify.app', // admin frontend (production)
-  'https://pos-kiosk.netlify.app', // client frontend (production)
+  'https://kiosk-client-delta.vercel.app', // client frontend (production)
 ];
 
 if (process.env.CLIENT_URL) {

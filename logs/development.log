@@ -195633,3 +195633,25 @@
         }
     }
 }
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T08:49:08.204Z",
+    "message": "Database connection established",
+    "meta": {
+        "CONNECTION_NAME": "KioskPos"
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T08:49:08.209Z",
+    "message": "Rate limiter initiated",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T08:49:08.210Z",
+    "message": "Application started on port 3000",
+    "meta": {
+        "SERVER_URL": "https://kiosk-server-production-e08d.up.railway.app"
+    }
+}
