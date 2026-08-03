@@ -195270,3 +195270,366 @@
         }
     }
 }
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T05:37:46.087Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/categories"
+        },
+        "message": "Operation is completed",
+        "data": [
+            {
+                "_id": "6a6b1b971937a27643d781a5",
+                "name": "Kebabs",
+                "displayOrder": 1,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.352Z",
+                "updatedAt": "2026-07-30T09:38:31.352Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a6",
+                "name": "Burgers",
+                "displayOrder": 2,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a7",
+                "name": "Toasties",
+                "displayOrder": 3,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a8",
+                "name": "Snacks",
+                "displayOrder": 4,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a9",
+                "name": "Halal Snack",
+                "displayOrder": 5,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781aa",
+                "name": "More",
+                "displayOrder": 6,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a4",
+                "name": "Sandwiches",
+                "displayOrder": 7,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.351Z",
+                "updatedAt": "2026-07-31T11:36:56.937Z"
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T05:37:46.104Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/categories"
+        },
+        "message": "Operation is completed",
+        "data": [
+            {
+                "_id": "6a6b1b971937a27643d781a5",
+                "name": "Kebabs",
+                "displayOrder": 1,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.352Z",
+                "updatedAt": "2026-07-30T09:38:31.352Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a6",
+                "name": "Burgers",
+                "displayOrder": 2,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a7",
+                "name": "Toasties",
+                "displayOrder": 3,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a8",
+                "name": "Snacks",
+                "displayOrder": 4,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a9",
+                "name": "Halal Snack",
+                "displayOrder": 5,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781aa",
+                "name": "More",
+                "displayOrder": 6,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a4",
+                "name": "Sandwiches",
+                "displayOrder": 7,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.351Z",
+                "updatedAt": "2026-07-31T11:36:56.937Z"
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T05:37:46.152Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/products"
+        },
+        "message": "Operation is completed",
+        "data": [
+            {
+                "_id": "6a6caad12f3ca1ff8bdf35e1",
+                "name": "Egg Sandwich",
+                "description": "mjhgff",
+                "price": 32,
+                "category": {
+                    "_id": "6a6b1b971937a27643d781a6",
+                    "name": "Burgers"
+                },
+                "image": "http://localhost:3000/uploads/product-1785506513545-ca9b8d03f51f.png",
+                "isActive": true,
+                "customizations": [],
+                "createdAt": "2026-07-31T14:01:53.658Z",
+                "updatedAt": "2026-07-31T14:01:53.658Z",
+                "__v": 0
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T05:37:46.166Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/products"
+        },
+        "message": "Operation is completed",
+        "data": [
+            {
+                "_id": "6a6caad12f3ca1ff8bdf35e1",
+                "name": "Egg Sandwich",
+                "description": "mjhgff",
+                "price": 32,
+                "category": {
+                    "_id": "6a6b1b971937a27643d781a6",
+                    "name": "Burgers"
+                },
+                "image": "http://localhost:3000/uploads/product-1785506513545-ca9b8d03f51f.png",
+                "isActive": true,
+                "customizations": [],
+                "createdAt": "2026-07-31T14:01:53.658Z",
+                "updatedAt": "2026-07-31T14:01:53.658Z",
+                "__v": 0
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-03T05:38:00.232Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/categories"
+        },
+        "message": "Operation is completed",
+        "data": [
+            {
+                "_id": "6a6b1b971937a27643d781a5",
+                "name": "Kebabs",
+                "displayOrder": 1,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.352Z",
+                "updatedAt": "2026-07-30T09:38:31.352Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a6",
+                "name": "Burgers",
+                "displayOrder": 2,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a7",
+                "name": "Toasties",
+                "displayOrder": 3,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a8",
+                "name": "Snacks",
+                "displayOrder": 4,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a9",
+                "name": "Halal Snack",
+                "displayOrder": 5,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781aa",
+                "name": "More",
+                "displayOrder": 6,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.353Z",
+                "updatedAt": "2026-07-30T09:38:31.353Z"
+            },
+            {
+                "_id": "6a6b1b971937a27643d781a4",
+                "name": "Sandwiches",
+                "displayOrder": 7,
+                "isActive": true,
+                "__v": 0,
+                "createdAt": "2026-07-30T09:38:31.351Z",
+                "updatedAt": "2026-07-31T11:36:56.937Z"
+            }
+        ]
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-03T05:48:32.527Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)"
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-03T06:06:29.879Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)"
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-03T06:10:46.521Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)"
+        }
+    }
+}

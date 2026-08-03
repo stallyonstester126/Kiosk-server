@@ -23,11 +23,18 @@ export const getAllProductsService = async (categoryId?: string) => {
     if (categoryId) {
         filter.category = categoryId
     }
-    const products = await productRepository.findAllProducts(filter)
-    const data = products.map((product: any) => ({
-        ...product,
-        image: product.image ? `${config.SERVER_URL}/uploads/${product.image.split('/uploads/').pop()}` : product.image
-    }))
+const products = await productRepository.findAllProducts(filter)
+    const data = products.map((product: any) => {
+        // Only prepend SERVER_URL if image doesn't already contain a full URL
+        let image = product.image
+        if (image && !image.startsWith('http://') && !image.startsWith('https://')) {
+            image = `${config.SERVER_URL}/uploads/${image.split('/uploads/').pop()}`
+        }
+        return {
+            ...product,
+            image
+        }
+    })
     return {
         success: true,
         data
