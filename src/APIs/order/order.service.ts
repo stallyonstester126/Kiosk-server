@@ -8,8 +8,8 @@ import { ICreateOrderBody } from './order.interface'
 // FIFO transition map: current status → allowed next statuses
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
     received: ['confirmed', 'cancelled'],
-    confirmed: ['preparing', 'cancelled'],
-    preparing: ['ready'],
+    confirmed: ['completed', 'preparing', 'cancelled'],
+    preparing: ['completed', 'ready'],
     ready: ['completed'],
     completed: [],
     cancelled: []
