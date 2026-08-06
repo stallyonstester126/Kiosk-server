@@ -45,6 +45,7 @@ export interface ICreateOrderBody {
     customerName: string
     paymentMethod?: 'cash' | 'card'
     paymentStatus?: 'pending' | 'paid' | 'failed'
+    couponCode?: string
     items: {
         productId: string
         name: string

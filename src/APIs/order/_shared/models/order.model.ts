@@ -61,6 +61,43 @@ const orderSchema = new mongoose.Schema(
             required: true,
             min: 0
         },
+        coupon_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Coupon',
+            default: null
+        },
+        coupon_code: {
+            type: String,
+            default: null
+        },
+        discount_type: {
+            type: String,
+            default: null
+        },
+        discount_value: {
+            type: Number,
+            default: 0
+        },
+        discount_amount: {
+            type: Number,
+            default: 0
+        },
+        subtotal_before_discount: {
+            type: Number,
+            default: 0
+        },
+        subtotal_after_discount: {
+            type: Number,
+            default: 0
+        },
+        tax_after_discount: {
+            type: Number,
+            default: 0
+        },
+        grand_total: {
+            type: Number,
+            default: 0
+        },
         paymentMethod: {
             type: String,
             enum: ['cash', 'card'],

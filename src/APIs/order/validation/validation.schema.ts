@@ -23,7 +23,8 @@ export const createOrderSchema = joi.object({
     customerName: joi.string().min(1).max(100).trim().required(),
     items: joi.array().items(orderItemSchema).min(1).required(),
     paymentMethod: joi.string().valid('cash', 'card').optional(),
-    paymentStatus: joi.string().valid('pending', 'paid', 'failed').optional()
+    paymentStatus: joi.string().valid('pending', 'paid', 'failed').optional(),
+    couponCode: joi.string().trim().uppercase().optional()
 })
 
 export const updateOrderStatusSchema = joi.object({

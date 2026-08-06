@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 import productRepository from '../product/_shared/repo/product.repository'
+import couponRepository from '../coupon/_shared/repo/coupon.repository'
+import { validateCouponHelper } from '../coupon/coupon.service'
 import { CustomError } from '../../utils/errors'
 
 export interface CalculatedOrderItem {
@@ -19,17 +21,30 @@ export interface CalculatedOrder {
     subtotal: number
     tax: number
     total: number
+    couponId: mongoose.Types.ObjectId | string | null
+    couponCode: string | null
+    discountType: string | null
+    discountValue: number
+    discountAmount: number
+    subtotalBeforeDiscount: number
+    subtotalAfterDiscount: number
+    taxAfterDiscount: number
+    grandTotal: number
 }
 
-export const calculateOrderTotal = async (items: Array<{
-    productId: string
-    quantity: number
-    customizations?: Array<{
-        groupId: string
-        groupTitle: string
-        options: Array<{ id: string; name: string; priceAdd: number }>
-    }>
-}>): Promise<CalculatedOrder> => {
+export const calculateOrderTotal = async (
+    items: Array<{
+        productId: string
+        quantity: number
+        customizations?: Array<{
+            groupId: string
+            groupTitle: string
+            options: Array<{ id: string; name: string; priceAdd: number }>
+        }>
+    }>,
+    couponCode?: string,
+    customerName?: string
+): Promise<CalculatedOrder> => {
     let subtotal = 0
     const calculatedItems: CalculatedOrderItem[] = []
 
@@ -93,13 +108,48 @@ export const calculateOrderTotal = async (items: Array<{
         })
     }
 
-    const tax = subtotal * 0.10
-    const total = subtotal + tax
+    let discountAmount = 0
+    let couponId: mongoose.Types.ObjectId | string | null = null
+    let finalCouponCode: string | null = null
+    let discountType: string | null = null
+    let discountValue = 0
+
+    if (couponCode) {
+        const cleanedCode = couponCode.trim().toUpperCase()
+        const coupon = await couponRepository.findCouponByCode(cleanedCode)
+        if (!coupon) {
+            throw new CustomError('Invalid coupon code', 422)
+        }
+        
+        const validation = await validateCouponHelper(coupon as any, subtotal, customerName)
+        if (!validation.valid) {
+            throw new CustomError(validation.reason || 'Invalid coupon', 422)
+        }
+        
+        discountAmount = validation.discountAmount ?? 0
+        couponId = coupon._id as mongoose.Types.ObjectId
+        finalCouponCode = coupon.code
+        discountType = coupon.discount_type
+        discountValue = coupon.discount_type === 'percentage' ? (coupon.percentage ?? 0) : (coupon.fixed_amount ?? 0)
+    }
+
+    const subtotalAfterDiscount = Math.round((subtotal - discountAmount) * 100) / 100
+    const taxAfterDiscount = Math.round((subtotalAfterDiscount * 0.10) * 100) / 100
+    const grandTotal = Math.round((subtotalAfterDiscount + taxAfterDiscount) * 100) / 100
 
     return {
         items: calculatedItems,
-        subtotal,
-        tax,
-        total
+        subtotal: subtotal,
+        tax: taxAfterDiscount,
+        total: grandTotal,
+        couponId,
+        couponCode: finalCouponCode,
+        discountType,
+        discountValue,
+        discountAmount,
+        subtotalBeforeDiscount: subtotal,
+        subtotalAfterDiscount,
+        taxAfterDiscount,
+        grandTotal
     }
-}
+}

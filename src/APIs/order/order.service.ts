@@ -1,6 +1,7 @@
 import responseMessage from '../../constant/responseMessage'
 import { CustomError } from '../../utils/errors'
 import orderRepository from './_shared/repo/order.repository'
+import couponRepository from '../coupon/_shared/repo/coupon.repository'
 import validate from './validation/validations'
 import { calculateOrderTotal } from './order.utils'
 import { ICreateOrderBody } from './order.interface'
@@ -21,7 +22,18 @@ export const createOrderService = async (payload: ICreateOrderBody) => {
     }
 
     // Server-side price calculation (ignore any client-provided prices)
-    const { items: calculatedItems, subtotal, tax, total } = await calculateOrderTotal(payload.items)
+    const {
+        items: calculatedItems,
+        subtotalBeforeDiscount,
+        taxAfterDiscount,
+        grandTotal,
+        couponId,
+        couponCode,
+        discountType,
+        discountValue,
+        discountAmount,
+        subtotalAfterDiscount
+    } = await calculateOrderTotal(payload.items, payload.couponCode, payload.customerName)
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
@@ -33,10 +45,23 @@ export const createOrderService = async (payload: ICreateOrderBody) => {
         paymentMethod: payload.paymentMethod || 'cash',
         paymentStatus: payload.paymentStatus || 'pending',
         items: calculatedItems,
-        subtotal,
-        tax,
-        total
+        subtotal: subtotalBeforeDiscount,
+        tax: taxAfterDiscount,
+        total: grandTotal,
+        coupon_id: couponId,
+        coupon_code: couponCode,
+        discount_type: discountType,
+        discount_value: discountValue,
+        discount_amount: discountAmount,
+        subtotal_before_discount: subtotalBeforeDiscount,
+        subtotal_after_discount: subtotalAfterDiscount,
+        tax_after_discount: taxAfterDiscount,
+        grand_total: grandTotal
     })
+
+    if (couponId) {
+        await couponRepository.incrementUsedCount(couponId.toString())
+    }
 
     return {
         success: true,

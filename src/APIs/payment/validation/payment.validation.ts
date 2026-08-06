@@ -21,5 +21,6 @@ const paymentItemSchema = joi.object({
 export const createPaymentIntentSchema = joi.object({
     orderType: joi.string().valid('eat-in', 'take-away').required(),
     customerName: joi.string().min(1).max(100).trim().required(),
-    items: joi.array().items(paymentItemSchema).min(1).required()
+    items: joi.array().items(paymentItemSchema).min(1).required(),
+    couponCode: joi.string().trim().uppercase().optional()
 })

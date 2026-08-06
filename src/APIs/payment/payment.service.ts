@@ -20,7 +20,7 @@ export const createPaymentIntentService = async (
     }
 
     // Server-side price calculation — never trust client amounts
-    const { total } = await calculateOrderTotal(payload.items)
+    const { total } = await calculateOrderTotal(payload.items, payload.couponCode, payload.customerName)
 
     // Stripe expects the amount in smallest currency unit (cents for USD)
     const amountInCents = Math.round(total * 100)
