@@ -5,6 +5,7 @@ import couponRepository from '../coupon/_shared/repo/coupon.repository'
 import validate from './validation/validations'
 import { calculateOrderTotal } from './order.utils'
 import { ICreateOrderBody } from './order.interface'
+import { generateCSV, generateExcel, generatePDF } from '../../utils/export.utils'
 
 // FIFO transition map: current status → allowed next statuses
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -69,11 +70,296 @@ export const createOrderService = async (payload: ICreateOrderBody) => {
     }
 }
 
-export const getAllOrdersService = async (status?: string) => {
-    const orders = await orderRepository.findAllOrders({ status })
+export const getAllOrdersService = async (filter: Record<string, any> = {}) => {
+    const orders = await orderRepository.findAllOrders(filter)
     return {
         success: true,
         data: orders
+    }
+}
+
+const moneyFormat = (val: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val)
+}
+
+export const exportSalesReportService = async (filter: Record<string, any>) => {
+    const orders = await orderRepository.findAllOrders(filter)
+    const exportType = filter.exportType || 'csv'
+
+    // Format rows
+    const data = orders.map((o: any) => ({
+        invoiceNumber: o.orderNumber,
+        orderNumber: o.orderNumber,
+        date: new Date(o.createdAt).toLocaleString(),
+        customerName: o.customerName || '—',
+        orderType: o.orderType || '—',
+        paymentMethod: o.paymentMethod || '—',
+        itemsCount: o.items ? o.items.reduce((sum: number, item: any) => sum + item.quantity, 0) : 0,
+        subtotal: o.subtotal_before_discount ?? o.subtotal ?? 0,
+        couponCode: o.coupon_code || '—',
+        discount: o.discount_amount || 0,
+        tax: o.tax_after_discount ?? o.tax ?? 0,
+        total: o.grand_total ?? o.total ?? 0,
+        status: o.status || '—'
+    }))
+
+    const summaryTotals = [
+        { label: 'Total Orders', value: orders.length },
+        { label: 'Total Revenue', value: data.reduce((sum, d) => sum + d.total, 0) },
+        { label: 'Total Discount', value: data.reduce((sum, d) => sum + d.discount, 0) },
+        { label: 'Total Tax', value: data.reduce((sum, d) => sum + d.tax, 0) },
+        { label: 'Net Revenue', value: data.reduce((sum, d) => sum + d.total, 0) }
+    ]
+
+    const filterList: { label: string; value: string }[] = []
+    if (filter.status && filter.status !== 'all') filterList.push({ label: 'Status', value: filter.status })
+    if (filter.paymentMethod && filter.paymentMethod !== 'all') filterList.push({ label: 'Payment Method', value: filter.paymentMethod })
+    if (filter.startDate) filterList.push({ label: 'From', value: filter.startDate })
+    if (filter.endDate) filterList.push({ label: 'To', value: filter.endDate })
+    if (filter.search) filterList.push({ label: 'Search', value: filter.search })
+
+    if (exportType === 'csv') {
+        const headers = [
+            'Invoice Number',
+            'Order Number',
+            'Date',
+            'Customer Name',
+            'Order Type',
+            'Payment Method',
+            'Items Count',
+            'Subtotal',
+            'Coupon Code',
+            'Discount',
+            'Tax',
+            'Grand Total',
+            'Status'
+        ]
+        const rows = data.map(d => [
+            d.invoiceNumber,
+            d.orderNumber,
+            d.date,
+            d.customerName,
+            d.orderType,
+            d.paymentMethod,
+            d.itemsCount,
+            moneyFormat(d.subtotal),
+            d.couponCode,
+            moneyFormat(d.discount),
+            moneyFormat(d.tax),
+            moneyFormat(d.total),
+            d.status
+        ])
+        
+        // Append summary totals to the CSV
+        rows.push([])
+        rows.push(['SUMMARY TOTALS'])
+        summaryTotals.forEach(s => {
+            rows.push([s.label, typeof s.value === 'number' && s.label !== 'Total Orders' ? moneyFormat(s.value) : s.value])
+        })
+
+        const content = generateCSV(headers, rows)
+        return { type: 'csv', content }
+    } else if (exportType === 'xlsx') {
+        const columns = [
+            { header: 'Invoice Number', key: 'invoiceNumber' },
+            { header: 'Order Number', key: 'orderNumber' },
+            { header: 'Date', key: 'date' },
+            { header: 'Customer Name', key: 'customerName' },
+            { header: 'Order Type', key: 'orderType' },
+            { header: 'Payment Method', key: 'paymentMethod' },
+            { header: 'Items Count', key: 'itemsCount' },
+            { header: 'Subtotal', key: 'subtotalFormatted' },
+            { header: 'Coupon Code', key: 'couponCode' },
+            { header: 'Discount', key: 'discountFormatted' },
+            { header: 'Tax', key: 'taxFormatted' },
+            { header: 'Grand Total', key: 'totalFormatted' },
+            { header: 'Status', key: 'status' }
+        ]
+
+        const formattedData = data.map(d => ({
+            ...d,
+            subtotalFormatted: moneyFormat(d.subtotal),
+            discountFormatted: moneyFormat(d.discount),
+            taxFormatted: moneyFormat(d.tax),
+            totalFormatted: moneyFormat(d.total)
+        }))
+
+        const formattedSummary = summaryTotals.map(s => ({
+            label: s.label,
+            value: typeof s.value === 'number' && s.label !== 'Total Orders' ? moneyFormat(s.value) : s.value
+        }))
+
+        const content = await generateExcel('Sales Report', columns, formattedData, formattedSummary)
+        return { type: 'xlsx', content }
+    } else {
+        // PDF
+        const columns = [
+            { header: 'Invoice', width: 70, field: 'invoiceNumber' },
+            { header: 'Date', width: 95, field: 'date' },
+            { header: 'Customer', width: 70, field: 'customerName' },
+            { header: 'Type', width: 45, field: 'orderType' },
+            { header: 'Payment', width: 45, field: 'paymentMethod' },
+            { header: 'Qty', width: 25, field: 'itemsCount', align: 'center' as const },
+            { header: 'Subtotal', width: 50, field: 'subtotalFormatted', align: 'right' as const },
+            { header: 'Coupon', width: 50, field: 'couponCode' },
+            { header: 'Discount', width: 50, field: 'discountFormatted', align: 'right' as const },
+            { header: 'Tax', width: 45, field: 'taxFormatted', align: 'right' as const },
+            { header: 'Total', width: 50, field: 'totalFormatted', align: 'right' as const },
+            { header: 'Status', width: 45, field: 'status' }
+        ]
+
+        const formattedData = data.map(d => ({
+            ...d,
+            subtotalFormatted: moneyFormat(d.subtotal),
+            discountFormatted: moneyFormat(d.discount),
+            taxFormatted: moneyFormat(d.tax),
+            totalFormatted: moneyFormat(d.total)
+        }))
+
+        const formattedSummary = summaryTotals.map(s => ({
+            label: s.label,
+            value: typeof s.value === 'number' && s.label !== 'Total Orders' ? moneyFormat(s.value) : s.value
+        }))
+
+        const content = await generatePDF('Sales Report', columns, formattedData, formattedSummary, filterList)
+        return { type: 'pdf', content }
+    }
+}
+
+export const exportTransactionsReportService = async (filter: Record<string, any>) => {
+    const orders = await orderRepository.findAllOrders(filter)
+    const exportType = filter.exportType || 'csv'
+
+    const data = orders.map((o: any) => ({
+        transactionId: o._id.toString(),
+        orderNumber: o.orderNumber,
+        date: new Date(o.createdAt).toLocaleString(),
+        customer: o.customerName || '—',
+        paymentMethod: o.paymentMethod || '—',
+        status: o.paymentStatus || '—',
+        amount: o.subtotal_before_discount ?? o.subtotal ?? 0,
+        tax: o.tax_after_discount ?? o.tax ?? 0,
+        discount: o.discount_amount ?? 0,
+        total: o.grand_total ?? o.total ?? 0,
+        coupon: o.coupon_code || '—'
+    }))
+
+    const successfulTransactions = data.filter(d => d.status === 'paid').length
+    const failedTransactions = data.filter(d => d.status === 'failed').length
+
+    const summaryTotals = [
+        { label: 'Total Transactions', value: orders.length },
+        { label: 'Successful Transactions', value: successfulTransactions },
+        { label: 'Failed Transactions', value: failedTransactions },
+        { label: 'Total Collected', value: data.reduce((sum, d) => d.status === 'paid' ? sum + d.total : sum, 0) },
+        { label: 'Total Discount', value: data.reduce((sum, d) => sum + d.discount, 0) },
+        { label: 'Total Tax', value: data.reduce((sum, d) => sum + d.tax, 0) }
+    ]
+
+    const filterList: { label: string; value: string }[] = []
+    if (filter.status && filter.status !== 'all') filterList.push({ label: 'Status', value: filter.status })
+    if (filter.paymentMethod && filter.paymentMethod !== 'all') filterList.push({ label: 'Payment Method', value: filter.paymentMethod })
+    if (filter.startDate) filterList.push({ label: 'From', value: filter.startDate })
+    if (filter.endDate) filterList.push({ label: 'To', value: filter.endDate })
+    if (filter.search) filterList.push({ label: 'Search', value: filter.search })
+
+    if (exportType === 'csv') {
+        const headers = [
+            'Transaction ID',
+            'Order Number',
+            'Date',
+            'Customer',
+            'Payment Method',
+            'Transaction Status',
+            'Subtotal',
+            'Tax',
+            'Discount',
+            'Final Amount',
+            'Coupon Code'
+        ]
+        const rows = data.map(d => [
+            d.transactionId,
+            d.orderNumber,
+            d.date,
+            d.customer,
+            d.paymentMethod,
+            d.status,
+            moneyFormat(d.amount),
+            moneyFormat(d.tax),
+            moneyFormat(d.discount),
+            moneyFormat(d.total),
+            d.coupon
+        ])
+
+        rows.push([])
+        rows.push(['SUMMARY TOTALS'])
+        summaryTotals.forEach(s => {
+            rows.push([s.label, typeof s.value === 'number' && !s.label.includes('Transactions') ? moneyFormat(s.value) : s.value])
+        })
+
+        const content = generateCSV(headers, rows)
+        return { type: 'csv', content }
+    } else if (exportType === 'xlsx') {
+        const columns = [
+            { header: 'Transaction ID', key: 'transactionId' },
+            { header: 'Order Number', key: 'orderNumber' },
+            { header: 'Date', key: 'date' },
+            { header: 'Customer', key: 'customer' },
+            { header: 'Payment Method', key: 'paymentMethod' },
+            { header: 'Transaction Status', key: 'status' },
+            { header: 'Subtotal', key: 'amountFormatted' },
+            { header: 'Tax', key: 'taxFormatted' },
+            { header: 'Discount', key: 'discountFormatted' },
+            { header: 'Final Amount', key: 'totalFormatted' },
+            { header: 'Coupon Code', key: 'coupon' }
+        ]
+
+        const formattedData = data.map(d => ({
+            ...d,
+            amountFormatted: moneyFormat(d.amount),
+            taxFormatted: moneyFormat(d.tax),
+            discountFormatted: moneyFormat(d.discount),
+            totalFormatted: moneyFormat(d.total)
+        }))
+
+        const formattedSummary = summaryTotals.map(s => ({
+            label: s.label,
+            value: typeof s.value === 'number' && !s.label.includes('Transactions') ? moneyFormat(s.value) : s.value
+        }))
+
+        const content = await generateExcel('Transactions Report', columns, formattedData, formattedSummary)
+        return { type: 'xlsx', content }
+    } else {
+        // PDF
+        const columns = [
+            { header: 'Transaction ID', width: 95, field: 'transactionId' },
+            { header: 'Order Num', width: 70, field: 'orderNumber' },
+            { header: 'Date', width: 95, field: 'date' },
+            { header: 'Customer', width: 75, field: 'customer' },
+            { header: 'Payment', width: 45, field: 'paymentMethod' },
+            { header: 'Status', width: 45, field: 'status' },
+            { header: 'Subtotal', width: 50, field: 'amountFormatted', align: 'right' as const },
+            { header: 'Tax', width: 45, field: 'taxFormatted', align: 'right' as const },
+            { header: 'Discount', width: 50, field: 'discountFormatted', align: 'right' as const },
+            { header: 'Final Amount', width: 50, field: 'totalFormatted', align: 'right' as const },
+            { header: 'Coupon', width: 45, field: 'coupon' }
+        ]
+
+        const formattedData = data.map(d => ({
+            ...d,
+            amountFormatted: moneyFormat(d.amount),
+            taxFormatted: moneyFormat(d.tax),
+            discountFormatted: moneyFormat(d.discount),
+            totalFormatted: moneyFormat(d.total)
+        }))
+
+        const formattedSummary = summaryTotals.map(s => ({
+            label: s.label,
+            value: typeof s.value === 'number' && !s.label.includes('Transactions') ? moneyFormat(s.value) : s.value
+        }))
+
+        const content = await generatePDF('Transactions Report', columns, formattedData, formattedSummary, filterList)
+        return { type: 'pdf', content }
     }
 }
 

@@ -15,6 +15,10 @@ router.route('/').post(orderController.createOrder)
 // Admin + Staff: kitchen queue (FIFO, active only)
 router.route('/kitchen').get(rateLimiter, authenticateAdminOrStaff, orderController.getKitchenOrders)
 
+// Admin exports
+router.route('/export/sales').get(rateLimiter, authenticateAdmin, orderController.exportSalesReport)
+router.route('/export/transactions').get(rateLimiter, authenticateAdmin, orderController.exportTransactionsReport)
+
 // Admin-only: single order detail
 router.route('/:id').get(rateLimiter, authenticateAdmin, orderController.getOrderById)
 
