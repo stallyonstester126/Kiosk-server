@@ -8,6 +8,7 @@ import { EUserRoles } from '../../constant/users'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { IAdminLoginBody } from './admin.interface'
+import logger from '../../handlers/logger'
 
 dayjs.extend(utc)
 
@@ -61,3 +62,59 @@ export const adminLoginService = async (payload: IAdminLoginBody) => {
         accessToken
     }
 }
+
+/**
+ * Validates the target staff member and generates a JWT for impersonation.
+ * Only the controller sets cookies — this service is pure business logic.
+ *
+ * @param adminId  - The authenticated admin's ID (for audit logging)
+ * @param staffId  - The target staff member's ID
+ */
+export const impersonateStaffService = async (adminId: string, staffId: string) => {
+    // 1. Fetch the target user
+    const staff = await query.findStaffById(staffId)
+    if (!staff) {
+        throw new CustomError(responseMessage.impersonation.INVALID_TARGET, 404)
+    }
+
+    // 2. Confirm role is staff
+    if (staff.role !== EUserRoles.STAFF) {
+        throw new CustomError(responseMessage.impersonation.INVALID_TARGET, 403)
+    }
+
+    // 3. Confirm staff is active
+    const staffRecord = staff as typeof staff & { isActive?: boolean }
+    if (staffRecord.isActive === false) {
+        throw new CustomError(responseMessage.impersonation.TARGET_INACTIVE, 403)
+    }
+
+    // 4. Generate a JWT for the staff user (same expiry as normal access token)
+    const staffToken = jwt.generateToken(
+        { userId: staff._id },
+        config.TOKENS.ACCESS.SECRET,
+        config.TOKENS.ACCESS.EXPIRY
+    )
+
+    // 5. Audit log
+    logger.info('IMPERSONATION_STARTED', {
+        meta: {
+            action: 'impersonate',
+            adminId: String(adminId),
+            targetStaffId: String(staff._id),
+            targetStaffEmail: staff.email,
+            timestamp: new Date().toISOString()
+        }
+    })
+
+    return {
+        staffToken,
+        staff: {
+            _id: staff._id,
+            name: staff.name,
+            email: staff.email,
+            role: staff.role,
+            permissions: staff.permissions || []
+        }
+    }
+}
+

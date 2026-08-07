@@ -51,5 +51,14 @@ product: {
         PASSWORD_RESET: `Password reset successfully`,
         DEACTIVATED: `Staff member deactivated`,
         ACTIVATED: `Staff member activated`
+    },
+
+    impersonation: {
+        STARTED: `Impersonation session started`,
+        EXITED: `Impersonation session exited`,
+        INVALID_TARGET: `Target is not an active staff member`,
+        NOT_IMPERSONATING: `No active impersonation session`,
+        ALREADY_IMPERSONATING: `An impersonation session is already active; exit it first`,
+        TARGET_INACTIVE: `Cannot impersonate an inactive staff account`
     }
 }
