@@ -12,6 +12,8 @@ import { EApplicationEnvironment } from '../../constant/application'
 import config from '../../config/config'
 import { IAdminLoginRequest } from './admin.interface'
 import { IAuthenticateRequest } from '../../types/types'
+import { aiSupportChatSchema, IAiSupportChatBody } from './ai-support.validation'
+import { getAiSupportReply } from './ai-support.service'
 
 export default {
     login: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
@@ -92,6 +94,17 @@ export default {
             httpResponse(response, request, 200, responseMessage.SUCCESS, null)
         } catch (error) {
             httpError(next, error, request, 500)
+        }
+    }),
+    aiSupportChat: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
+        try {
+            const { error, payload } = validateSchema<IAiSupportChatBody>(aiSupportChatSchema, request.body)
+            if (error) return httpError(next, error, request, 422)
+            const { authenticatedUser } = request as unknown as IAuthenticateRequest
+            const result = await getAiSupportReply(payload, authenticatedUser)
+            httpResponse(response, request, 200, responseMessage.SUCCESS, result)
+        } catch (error) {
+            httpError(next, error, request, error instanceof CustomError ? error.statusCode : 500)
         }
     })
 }

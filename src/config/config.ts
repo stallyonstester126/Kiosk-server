@@ -30,5 +30,10 @@ export default {
     STRIPE: {
         SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
         WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string
+    },
+
+    GROQ: {
+        API_KEY: process.env.GROQ_API_KEY,
+        MODEL: process.env.GROQ_MODEL
     }
 }
