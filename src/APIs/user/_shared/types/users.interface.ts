@@ -11,6 +11,7 @@ export interface IUser {
     timezone: string
     password: string
     role: EUserRoles
+    permissions?: string[]  // Array of permission strings like 'kitchen', 'products', etc.
     accountConfimation: {
         status: boolean
         token: string

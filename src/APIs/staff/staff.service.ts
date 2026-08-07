@@ -23,6 +23,7 @@ export const createStaffService = async (payload: ICreateStaffBody) => {
         email: payload.email,
         password: hashedPassword,
         role: EUserRoles.STAFF,
+        permissions: payload.permissions && payload.permissions.length > 0 ? payload.permissions : ['kitchen'],
         // These fields are for the user self-registration flow and not applicable to staff.
         // Model defaults (null / false) are applied automatically by Mongoose.
         phoneNumber: { isoCode: '', countryCode: '', internationalNumber: '' },
@@ -39,7 +40,8 @@ export const createStaffService = async (payload: ICreateStaffBody) => {
             _id: staff._id,
             name: staff.name,
             email: staff.email,
-            role: staff.role
+            role: staff.role,
+            permissions: staff.permissions
         }
     }
 }
