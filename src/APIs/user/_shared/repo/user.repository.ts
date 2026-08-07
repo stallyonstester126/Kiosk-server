@@ -24,7 +24,7 @@ export default {
     findAllStaff: () => {
         return userModel
             .find({ role: EUserRoles.STAFF })
-            .select('name email role lastLoginAt createdAt isActive')
+            .select('name email role permissions lastLoginAt createdAt isActive')
             .sort({ createdAt: -1 })
             .lean()
     },

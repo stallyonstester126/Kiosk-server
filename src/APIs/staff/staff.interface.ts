@@ -1,16 +1,17 @@
 import { Request } from 'express'
+import { Permission } from '../../constant/permissions'
 
 export interface ICreateStaffBody {
     name: string
     email: string
     password: string
-    permissions?: string[]  // Array of permission strings like 'kitchen', 'products', etc.
+    permissions?: Permission[]
 }
 
 export interface IUpdateStaffBody {
     name?: string
     email?: string
-    permissions?: string[]
+    permissions?: Permission[]
 }
 
 export interface IUpdateStaffStatusBody {
@@ -42,7 +43,7 @@ export interface IStaffWithPermissions {
     name: string
     email: string
     role: string
-    permissions?: string[]
+    permissions?: Permission[]
     isActive?: boolean
     lastLoginAt?: string | null
     createdAt: string

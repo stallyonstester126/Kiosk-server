@@ -55,7 +55,16 @@ export default {
     me: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
         try {
             const { authenticatedUser } = request as unknown as IAuthenticateRequest
-            httpResponse(response, request, 200, responseMessage.SUCCESS, authenticatedUser)
+            const { _id, name, email, role, permissions, isActive, lastLoginAt } = authenticatedUser
+            httpResponse(response, request, 200, responseMessage.SUCCESS, {
+                _id,
+                name,
+                email,
+                role,
+                permissions: permissions || [],
+                isActive,
+                lastLoginAt
+            })
         } catch (error) {
             if (error instanceof CustomError) {
                 httpError(next, error, request, error.statusCode)

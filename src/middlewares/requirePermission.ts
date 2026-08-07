@@ -5,6 +5,7 @@ import query from '../APIs/user/_shared/repo/user.repository'
 import httpError from '../handlers/errorHandler/httpError'
 import responseMessage from '../constant/responseMessage'
 import asyncHandler from '../handlers/async'
+import { Permission } from '../constant/permissions'
 
 /**
  * Middleware factory that creates a permission-based authorization middleware.
@@ -13,7 +14,7 @@ import asyncHandler from '../handlers/async'
  * @param requiredPermission - The permission string required (e.g., 'kitchen', 'products', 'sales-report')
  * @returns Express middleware function
  */
-export const requirePermission = (requiredPermission: string) => {
+export const requirePermission = (requiredPermission: Permission) => {
   return asyncHandler(async (request: Request, _response: Response, next: NextFunction) => {
     try {
       const req = request as any; // IAuthenticateRequest

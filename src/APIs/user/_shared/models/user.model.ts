@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { IUser } from '../types/users.interface'
 import { EUserRoles } from '../../../../constant/users'
+import { PERMISSIONS } from '../../../../constant/permissions'
 
 const userSchema = new mongoose.Schema<IUser>(
     {
@@ -36,6 +37,15 @@ const userSchema = new mongoose.Schema<IUser>(
             default: EUserRoles.USER,
             enum: EUserRoles,
             required: true
+        },
+        permissions: {
+            type: [String],
+            enum: PERMISSIONS,
+            default: []
+        },
+        isActive: {
+            type: Boolean,
+            default: true
         },
         accountConfimation: {
             _id: false,

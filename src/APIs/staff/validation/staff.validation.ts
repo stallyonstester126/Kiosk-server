@@ -1,6 +1,7 @@
 import joi from 'joi'
+import { PERMISSIONS } from '../../../constant/permissions'
 
-const permissionValues = ['kitchen', 'products', 'transactions', 'sales-report', 'coupons', 'staff']
+const permissionValues = PERMISSIONS
 
 export const createStaffSchema = joi.object({
     name: joi.string().min(2).max(72).trim().required(),

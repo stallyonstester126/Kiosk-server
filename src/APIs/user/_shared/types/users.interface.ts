@@ -1,4 +1,5 @@
 import { EUserRoles } from '../../../../constant/users'
+import { Permission } from '../../../../constant/permissions'
 
 export interface IUser {
     name: string
@@ -11,7 +12,8 @@ export interface IUser {
     timezone: string
     password: string
     role: EUserRoles
-    permissions?: string[]  // Array of permission strings like 'kitchen', 'products', etc.
+    permissions?: Permission[]
+    isActive?: boolean
     accountConfimation: {
         status: boolean
         token: string
@@ -28,5 +30,5 @@ export interface IUser {
 }
 
 export interface IUserWithId extends IUser {
-    _id: string
+    _id: unknown
 }

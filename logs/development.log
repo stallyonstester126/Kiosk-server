@@ -195655,3 +195655,60 @@
         "SERVER_URL": "https://kiosk-server-production-e08d.up.railway.app"
     }
 }
+{
+    "level": "INFO",
+    "timestamp": "2026-08-07T11:19:50.432Z",
+    "message": "Database connection established",
+    "meta": {
+        "CONNECTION_NAME": "KioskPos"
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-07T11:19:50.444Z",
+    "message": "Rate limiter initiated",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-07T11:19:50.446Z",
+    "message": "Application started on port 3000",
+    "meta": {
+        "SERVER_URL": "https://kiosk-server-production-e08d.up.railway.app"
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-07T11:19:55.907Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/health"
+        },
+        "message": "Operation is completed",
+        "data": {
+            "application": {
+                "environment": "development",
+                "uptime": "15.80 Second",
+                "memoryUsage": {
+                    "heapTotal": "108.12 MB",
+                    "heapUsed": "44.71 MB"
+                }
+            },
+            "system": {
+                "cpuUsage": [
+                    0,
+                    0,
+                    0
+                ],
+                "totalMemory": "8069.54 MB",
+                "freeMemory": "1373.39 MB"
+            },
+            "timeStamp": 1786101595906
+        }
+    }
+}

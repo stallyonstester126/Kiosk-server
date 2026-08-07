@@ -15,7 +15,7 @@ export const adminLoginService = async (payload: IAdminLoginBody) => {
     const { email, password } = payload
 
     // 1. Check user exists
-    const user = await query.findUserByEmail(email, 'name email role password isActive')
+    const user = await query.findUserByEmail(email, 'name email role permissions password isActive')
     if (!user) {
         throw new CustomError(responseMessage.auth.INVALID_EMAIL_OR_PASSWORD, 400)
     }
@@ -55,7 +55,8 @@ export const adminLoginService = async (payload: IAdminLoginBody) => {
             _id: user._id,
             name: user.name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            permissions: user.permissions || []
         },
         accessToken
     }
