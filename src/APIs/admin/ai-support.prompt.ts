@@ -5,11 +5,27 @@ import { Permission } from '../../constant/permissions'
 const knowledgeBaseFiles = ['AI_HELP_ASSISTANT_KNOWLEDGE.md', 'ai-help-assistant-context.json']
 
 const loadKnowledgeBase = async () => {
-    const docsDirectory = path.resolve(process.cwd(), '..', 'docs')
-    const documents = await Promise.all(
-        knowledgeBaseFiles.map(async file => fs.readFile(path.join(docsDirectory, file), 'utf8'))
-    )
-    return documents.join('\n\n--- Structured knowledge ---\n\n')
+    const possiblePaths = [
+        path.resolve(process.cwd(), '..', 'docs'),
+        path.resolve(process.cwd(), 'docs'),
+        path.resolve(__dirname, '..', '..', '..', '..', 'docs'),
+        path.resolve(__dirname, '..', '..', '..', 'docs')
+    ]
+
+    for (const docsDirectory of possiblePaths) {
+        try {
+            const testFile = path.join(docsDirectory, knowledgeBaseFiles[0])
+            await fs.access(testFile)
+            console.log('[AI Support Diagnostic] Resolved docs directory to:', docsDirectory)
+            const documents = await Promise.all(
+                knowledgeBaseFiles.map(async file => fs.readFile(path.join(docsDirectory, file), 'utf8'))
+            )
+            return documents.join('\n\n--- Structured knowledge ---\n\n')
+        } catch (err) {
+            // Try the next path
+        }
+    }
+    throw new Error('Knowledge base documents could not be located in any of the expected paths.')
 }
 
 export const buildAiSupportSystemPrompt = async (user: { role: string; permissions?: Permission[] }, currentPath?: string) => {
