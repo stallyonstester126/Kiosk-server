@@ -48,16 +48,11 @@ export interface ICreateOrderBody {
     couponCode?: string
     items: {
         productId: string
-        name: string
         quantity: number
-        basePrice: number
         customizations: {
             groupId: string
-            groupTitle: string
             options: {
                 id: string
-                name: string
-                priceAdd: number
             }[]
         }[]
     }[]

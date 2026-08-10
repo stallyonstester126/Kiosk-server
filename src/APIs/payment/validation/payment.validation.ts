@@ -6,12 +6,9 @@ const paymentItemSchema = joi.object({
     customizations: joi.array().items(
         joi.object({
             groupId: joi.string().required(),
-            groupTitle: joi.string().required(),
             options: joi.array().items(
                 joi.object({
-                    id: joi.string().required(),
-                    name: joi.string().required(),
-                    priceAdd: joi.number().min(0).required()
+                    id: joi.string().required()
                 })
             ).required()
         })

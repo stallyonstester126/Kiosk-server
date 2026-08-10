@@ -5,6 +5,8 @@ const customizationOptionSchema = joi.object({
     id: joi.string().required(),
     name: joi.string().required(),
     priceAdd: joi.number().min(0).required()
+    , isActive: joi.boolean().default(true)
+    , displayOrder: joi.number().integer().min(0).default(0)
 })
 
 const customizationGroupSchema = joi.object({
@@ -12,8 +14,20 @@ const customizationGroupSchema = joi.object({
     title: joi.string().required(),
     type: joi.string().valid('single', 'multiple').required(),
     required: joi.boolean().required(),
+    minSelections: joi.number().integer().min(0).default(0),
+    maxSelections: joi.number().integer().min(0).allow(null).optional(),
+    isActive: joi.boolean().default(true),
+    displayOrder: joi.number().integer().min(0).default(0),
     options: joi.array().items(customizationOptionSchema).required()
-})
+}).custom((value, helpers) => {
+    const minimum = value.required ? Math.max(1, value.minSelections || 0) : (value.minSelections || 0)
+    if (!value.title.trim()) return helpers.error('any.invalid')
+    if (!value.options.length) return helpers.error('any.invalid')
+    if (value.type === 'single' && value.maxSelections != null && value.maxSelections !== 1) return helpers.error('any.invalid')
+    if (value.maxSelections != null && value.maxSelections < minimum) return helpers.error('any.invalid')
+    if (new Set(value.options.map((option: { name: string }) => option.name.trim().toLowerCase())).size !== value.options.length) return helpers.error('any.invalid')
+    return value
+}, 'customization validation')
 
 export const createProductSchema = joi.object<ICreateProductBody, true>({
     name: joi.string().min(1).max(100).trim().required(),

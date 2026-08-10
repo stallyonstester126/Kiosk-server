@@ -1,14 +1,11 @@
 import joi from 'joi'
 
 const customizationOptionSchema = joi.object({
-    id: joi.string().required(),
-    name: joi.string().required(),
-    priceAdd: joi.number().min(0).required()
+    id: joi.string().required()
 })
 
 const customizationGroupSchema = joi.object({
     groupId: joi.string().required(),
-    groupTitle: joi.string().required(),
     options: joi.array().items(customizationOptionSchema).required()
 })
 

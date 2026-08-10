@@ -4,6 +4,8 @@ export interface ICustomizationOption {
     id: string
     name: string
     priceAdd: number
+    isActive: boolean
+    displayOrder: number
 }
 
 export interface ICustomizationGroup {
@@ -11,6 +13,10 @@ export interface ICustomizationGroup {
     title: string
     type: 'single' | 'multiple'
     required: boolean
+    minSelections: number
+    maxSelections?: number
+    isActive: boolean
+    displayOrder: number
     options: ICustomizationOption[]
 }
 

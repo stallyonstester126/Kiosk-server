@@ -43,7 +43,11 @@ export default {
                     name: product.category.name
                 } : null,
                 image: product.image,
-                customizations: product.customizations || []
+                customizations: (product.customizations || []).filter((group: any) => group.isActive !== false).map((group: any) => ({
+                    id: group.id, title: group.title, type: group.type, required: group.required,
+                    minSelections: group.minSelections || 0, maxSelections: group.maxSelections ?? null,
+                    options: (group.options || []).filter((option: any) => option.isActive !== false)
+                }))
             }))
 
             httpResponse(response, request, 200, responseMessage.SUCCESS, products)

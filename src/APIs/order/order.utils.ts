@@ -38,8 +38,7 @@ export const calculateOrderTotal = async (
         quantity: number
         customizations?: Array<{
             groupId: string
-            groupTitle: string
-            options: Array<{ id: string; name: string; priceAdd: number }>
+            options: Array<{ id: string }>
         }>
     }>,
     couponCode?: string,
@@ -64,17 +63,35 @@ export const calculateOrderTotal = async (
         let itemPrice = product.price
         const validatedCustomizations: CalculatedOrderItem['customizations'] = []
 
-        for (const customGroup of item.customizations || []) {
-            const productGroup = product.customizations?.find((g) => g.id === customGroup.groupId)
-            if (!productGroup) {
-                throw new CustomError(`Invalid customization group: ${customGroup.groupId}`, 422)
+        const submittedGroups = new Map((item.customizations || []).map((group) => [group.groupId, group]))
+        if (submittedGroups.size !== (item.customizations || []).length) {
+            throw new CustomError('A customization group can only be submitted once', 422)
+        }
+
+        for (const productGroup of product.customizations || []) {
+            if (!productGroup.isActive) continue
+            const customGroup = submittedGroups.get(productGroup.id)
+            const selectedOptions = customGroup?.options || []
+            const minimum = productGroup.required ? Math.max(1, productGroup.minSelections || 0) : (productGroup.minSelections || 0)
+            const maximum = productGroup.type === 'single' ? 1 : productGroup.maxSelections
+
+            if (selectedOptions.length < minimum) {
+                throw new CustomError(`Please select an option for ${productGroup.title}`, 422)
             }
-
+            if (maximum != null && selectedOptions.length > maximum) {
+                throw new CustomError(`Too many selections for ${productGroup.title}`, 422)
+            }
+            if (productGroup.type === 'single' && selectedOptions.length > 1) {
+                throw new CustomError(`Only one option can be selected for ${productGroup.title}`, 422)
+            }
+            if (!customGroup) continue
             const validatedOptions: CalculatedOrderItem['customizations'][0]['options'] = []
-
-            for (const selectedOption of customGroup.options) {
+            const optionIds = new Set<string>()
+            for (const selectedOption of selectedOptions) {
+                if (optionIds.has(selectedOption.id)) throw new CustomError(`Duplicate customization option: ${selectedOption.id}`, 422)
+                optionIds.add(selectedOption.id)
                 const productOption = productGroup.options.find((o) => o.id === selectedOption.id)
-                if (!productOption) {
+                if (!productOption || !productOption.isActive) {
                     throw new CustomError(`Invalid customization option: ${selectedOption.id}`, 422)
                 }
                 validatedOptions.push({
@@ -86,10 +103,15 @@ export const calculateOrderTotal = async (
             }
 
             validatedCustomizations.push({
-                groupId: customGroup.groupId,
-                groupTitle: customGroup.groupTitle,
+                groupId: productGroup.id,
+                groupTitle: productGroup.title,
                 options: validatedOptions
             })
+        }
+
+        for (const submittedGroup of submittedGroups.values()) {
+            const group = product.customizations?.find((candidate) => candidate.id === submittedGroup.groupId)
+            if (!group || !group.isActive) throw new CustomError(`Invalid customization group: ${submittedGroup.groupId}`, 422)
         }
 
         if (item.quantity <= 0) {
@@ -152,4 +174,4 @@ export const calculateOrderTotal = async (
         taxAfterDiscount,
         grandTotal
     }
-}
+}

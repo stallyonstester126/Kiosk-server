@@ -9,11 +9,8 @@ export interface ICreatePaymentIntentBody {
         quantity: number
         customizations?: {
             groupId: string
-            groupTitle: string
             options: {
                 id: string
-                name: string
-                priceAdd: number
             }[]
         }[]
     }[]
