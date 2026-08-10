@@ -11,6 +11,7 @@ import orderRoutes from './order'
 import paymentRoutes from './payment'
 import staffRoutes from './staff'
 import couponRoutes from './coupon'
+import menuRoutes from './menu'
 
 const App = (app: Application) => {
     app.use(`${API_ROOT}`, General)
@@ -23,6 +24,7 @@ const App = (app: Application) => {
     app.use(`${API_ROOT}/payments`, paymentRoutes)
     app.use(`${API_ROOT}/staff`, staffRoutes)
     app.use(`${API_ROOT}/coupons`, couponRoutes)
+    app.use(`${API_ROOT}/menu`, menuRoutes)
 }
 
 export default App
