@@ -7,7 +7,6 @@ import { loginSchema } from './validation/validation.schema'
 import { adminLoginService, impersonateStaffService } from './admin.service'
 import { CustomError } from '../../utils/errors'
 import asyncHandler from '../../handlers/async'
-import health from '../../utils/health'
 import { EApplicationEnvironment } from '../../constant/application'
 import config from '../../config/config'
 import { IAdminLoginRequest } from './admin.interface'
@@ -33,11 +32,9 @@ export default {
             const isLoggedIn = await adminLoginService(payload)
             if (isLoggedIn.success === true) {
                 // sending cookies
-                const DOMAIN = health.getDomain()
                 const isProd = config.ENV === EApplicationEnvironment.PRODUCTION
                 response.cookie('admin_accessToken', isLoggedIn.accessToken, {
-                    path: '/v1',
-                    domain: DOMAIN,
+                    path: '/',
                     sameSite: isProd ? 'none' : 'strict',
                     maxAge: 1000 * config.TOKENS.ACCESS.EXPIRY,
                     httpOnly: true,
@@ -93,12 +90,10 @@ export default {
 
     logout: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
         try {
-            const DOMAIN = health.getDomain()
             const isProd = config.ENV === EApplicationEnvironment.PRODUCTION
 
             const cookieOpts = {
-                path: '/v1',
-                domain: DOMAIN,
+                path: '/',
                 sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
                 maxAge: 1000 * config.TOKENS.ACCESS.EXPIRY,
                 httpOnly: true,
@@ -148,11 +143,9 @@ export default {
             // Validate and get staff token
             const result = await impersonateStaffService(String(authenticatedUser._id), staffId)
 
-            const DOMAIN = health.getDomain()
             const isProd = config.ENV === EApplicationEnvironment.PRODUCTION
             const cookieOpts = {
-                path: '/v1',
-                domain: DOMAIN,
+                path: '/',
                 sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
                 maxAge: 1000 * config.TOKENS.ACCESS.EXPIRY,
                 httpOnly: true,
@@ -200,11 +193,9 @@ export default {
                 adminId = decoded.userId
             } catch {
                 // Token expired or tampered — clear both cookies and force re-login
-                const DOMAIN = health.getDomain()
                 const isProd = config.ENV === EApplicationEnvironment.PRODUCTION
                 const cookieOpts = {
-                    path: '/v1',
-                    domain: DOMAIN,
+                    path: '/',
                     sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
                     httpOnly: true,
                     secure: isProd
@@ -219,11 +210,9 @@ export default {
                 return httpError(next, new Error(responseMessage.UNAUTHORIZED), request, 401)
             }
 
-            const DOMAIN = health.getDomain()
             const isProd = config.ENV === EApplicationEnvironment.PRODUCTION
             const cookieOpts = {
-                path: '/v1',
-                domain: DOMAIN,
+                path: '/',
                 sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
                 maxAge: 1000 * config.TOKENS.ACCESS.EXPIRY,
                 httpOnly: true,
@@ -234,8 +223,7 @@ export default {
             response.cookie('admin_accessToken', impersonationToken, cookieOpts)
             // Clear impersonation token
             response.clearCookie('admin_impersonationToken', {
-                path: '/v1',
-                domain: DOMAIN,
+                path: '/',
                 sameSite: isProd ? 'none' : 'strict',
                 httpOnly: true,
                 secure: isProd
