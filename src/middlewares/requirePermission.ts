@@ -6,6 +6,7 @@ import httpError from '../handlers/errorHandler/httpError'
 import responseMessage from '../constant/responseMessage'
 import asyncHandler from '../handlers/async'
 import { Permission } from '../constant/permissions'
+import { IAuthenticateRequest } from '../types/types'
 
 /**
  * Middleware factory that creates a permission-based authorization middleware.
@@ -17,7 +18,7 @@ import { Permission } from '../constant/permissions'
 export const requirePermission = (requiredPermission: Permission) => {
   return asyncHandler(async (request: Request, _response: Response, next: NextFunction) => {
     try {
-      const req = request as any; // IAuthenticateRequest
+      const req = request as IAuthenticateRequest
 
       const { cookies } = req
 
@@ -35,6 +36,9 @@ export const requirePermission = (requiredPermission: Permission) => {
       if (!user) {
         return httpError(next, new Error(responseMessage.UNAUTHORIZED), request, 401)
       }
+
+      // Keep the authenticated identity available to controllers after authorization.
+      req.authenticatedUser = user
 
       // Admin has all permissions
       if (user.role === 'admin') {

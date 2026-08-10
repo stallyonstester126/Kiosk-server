@@ -18,6 +18,7 @@ import { CustomError } from '../../utils/errors'
 import asyncHandler from '../../handlers/async'
 import { IAuthenticateRequest } from '../../types/types'
 import { ICreateCouponBody, IUpdateCouponBody } from './coupon.interface'
+import mongoose from 'mongoose'
 
 export default {
     createCoupon: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
@@ -28,7 +29,10 @@ export default {
                 return httpError(next, error, request, 422)
             }
 
-            const userId = (req.authenticatedUser as any)?._id?.toString() || ''
+            const userId = req.authenticatedUser?._id?.toString()
+            if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+                throw new CustomError('Authenticated user identity is invalid', 401)
+            }
             const result = await createCouponService(payload, userId)
             if (result.success === true) {
                 httpResponse(response, request, 201, 'Coupon created successfully', result.data)
