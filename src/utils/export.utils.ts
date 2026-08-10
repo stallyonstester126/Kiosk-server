@@ -146,7 +146,15 @@ export function generatePDF(
         doc.font('Helvetica').fontSize(7).fillColor('#333333')
         let alternate = false
         data.forEach((row) => {
-            if (currentY > doc.page.height - 70) {
+            const rowHeight = Math.max(
+                13,
+                ...columns.map((col) => {
+                    const value = row[col.field] !== undefined && row[col.field] !== null ? String(row[col.field]) : ''
+                    return doc.heightOfString(value, { width: col.width, align: col.align || 'left' }) + 4
+                })
+            )
+
+            if (currentY + rowHeight > doc.page.height - 70) {
                 // Page overflow: add new page and repeat headers
                 doc.addPage()
                 currentY = 40
@@ -162,7 +170,7 @@ export function generatePDF(
             }
 
             if (alternate) {
-                doc.rect(startX, currentY - 2, doc.page.width - 60, 13).fillColor('#f9fafb').fill()
+                doc.rect(startX, currentY - 2, doc.page.width - 60, rowHeight).fillColor('#f9fafb').fill()
             }
             doc.fillColor('#333333')
 
@@ -174,7 +182,7 @@ export function generatePDF(
             })
 
             alternate = !alternate
-            currentY += 13
+            currentY += rowHeight
         })
 
         // Draw Summary box

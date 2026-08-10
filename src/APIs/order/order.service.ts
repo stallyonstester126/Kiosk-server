@@ -194,18 +194,18 @@ export const exportSalesReportService = async (filter: Record<string, any>) => {
     } else {
         // PDF
         const columns = [
-            { header: 'Invoice', width: 70, field: 'invoiceNumber' },
-            { header: 'Date', width: 95, field: 'date' },
-            { header: 'Customer', width: 70, field: 'customerName' },
-            { header: 'Type', width: 45, field: 'orderType' },
-            { header: 'Payment', width: 45, field: 'paymentMethod' },
+            { header: 'Invoice', width: 85, field: 'invoiceNumber' },
+            { header: 'Date', width: 90, field: 'date' },
+            { header: 'Customer', width: 65, field: 'customerName' },
+            { header: 'Type', width: 40, field: 'orderType' },
+            { header: 'Payment', width: 40, field: 'paymentMethod' },
             { header: 'Qty', width: 25, field: 'itemsCount', align: 'center' as const },
             { header: 'Subtotal', width: 50, field: 'subtotalFormatted', align: 'right' as const },
             { header: 'Coupon', width: 50, field: 'couponCode' },
             { header: 'Discount', width: 50, field: 'discountFormatted', align: 'right' as const },
             { header: 'Tax', width: 45, field: 'taxFormatted', align: 'right' as const },
             { header: 'Total', width: 50, field: 'totalFormatted', align: 'right' as const },
-            { header: 'Status', width: 45, field: 'status' }
+            { header: 'Status', width: 40, field: 'status' }
         ]
 
         const formattedData = data.map(d => ({
@@ -333,16 +333,16 @@ export const exportTransactionsReportService = async (filter: Record<string, any
         // PDF
         const columns = [
             { header: 'Transaction ID', width: 95, field: 'transactionId' },
-            { header: 'Order Num', width: 70, field: 'orderNumber' },
+            { header: 'Order Num', width: 85, field: 'orderNumber' },
             { header: 'Date', width: 95, field: 'date' },
             { header: 'Customer', width: 75, field: 'customer' },
-            { header: 'Payment', width: 45, field: 'paymentMethod' },
-            { header: 'Status', width: 45, field: 'status' },
+            { header: 'Payment', width: 40, field: 'paymentMethod' },
+            { header: 'Status', width: 40, field: 'status' },
             { header: 'Subtotal', width: 50, field: 'amountFormatted', align: 'right' as const },
             { header: 'Tax', width: 45, field: 'taxFormatted', align: 'right' as const },
             { header: 'Discount', width: 50, field: 'discountFormatted', align: 'right' as const },
             { header: 'Final Amount', width: 50, field: 'totalFormatted', align: 'right' as const },
-            { header: 'Coupon', width: 45, field: 'coupon' }
+            { header: 'Coupon', width: 40, field: 'coupon' }
         ]
 
         const formattedData = data.map(d => ({
