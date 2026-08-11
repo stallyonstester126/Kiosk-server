@@ -7,6 +7,7 @@ import { calculateOrderTotal } from './order.utils'
 import { ICreateOrderBody } from './order.interface'
 import { generateCSV, generateExcel, generatePDF } from '../../utils/export.utils'
 import ExcelJS from 'exceljs'
+import { emitNewOrder } from '../../utils/socket'
 
 // FIFO transition map: current status → allowed next statuses
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -64,6 +65,9 @@ export const createOrderService = async (payload: ICreateOrderBody) => {
     if (couponId) {
         await couponRepository.incrementUsedCount(couponId.toString())
     }
+
+    // Emit real-time event to Kitchen after DB save succeeds
+    emitNewOrder(order)
 
     return {
         success: true,

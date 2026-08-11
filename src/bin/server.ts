@@ -2,8 +2,11 @@ import app from '../app'
 import { bootstrap } from '../bootstrap'
 import config from '../config/config'
 import logger from '../handlers/logger'
+import { initSocket } from '../utils/socket'
 
 const server = app.listen(config.PORT)
+initSocket(server)
+
 void (async () => {
     try {
         await bootstrap().then(() => {
