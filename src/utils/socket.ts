@@ -9,15 +9,24 @@ import { IDecryptedJwt } from '../types/types'
 
 let io: SocketServer | null = null
 
+/**
+ * Parse a raw Cookie header string into a key→value map.
+ * Splits only on the FIRST '=' per cookie pair so that JWT tokens that contain
+ * base64 padding characters ('=') are not truncated.
+ */
 const parseCookies = (cookieHeader: string | undefined): Record<string, string> => {
     if (!cookieHeader) return {}
-    return cookieHeader.split(';').reduce((acc, curr) => {
-        const [key, val] = curr.trim().split('=')
-        if (key && val) {
-            acc[key] = decodeURIComponent(val)
-        }
-        return acc
-    }, {} as Record<string, string>)
+    return cookieHeader.split(';').reduce(
+        (acc, pair) => {
+            const eqIdx = pair.indexOf('=')
+            if (eqIdx === -1) return acc
+            const key = pair.slice(0, eqIdx).trim()
+            const val = pair.slice(eqIdx + 1).trim()
+            if (key) acc[key] = val
+            return acc
+        },
+        {} as Record<string, string>
+    )
 }
 
 export const initSocket = (server: HttpServer) => {
@@ -30,6 +39,9 @@ export const initSocket = (server: HttpServer) => {
     if (process.env.CLIENT_URL) {
         allowedOrigins.push(process.env.CLIENT_URL)
     }
+    if (process.env.ADMIN_URL) {
+        allowedOrigins.push(process.env.ADMIN_URL)
+    }
 
     io = new SocketServer(server, {
         cors: {
@@ -37,6 +49,7 @@ export const initSocket = (server: HttpServer) => {
                 if (!origin || allowedOrigins.includes(origin)) {
                     callback(null, true)
                 } else {
+                    logger.warn(`Socket CORS rejected origin: ${origin}`)
                     callback(new Error('Not allowed by CORS'))
                 }
             },
@@ -45,44 +58,61 @@ export const initSocket = (server: HttpServer) => {
         }
     })
 
-    // Authentication middleware for Socket.io
+    // ── Authentication middleware ─────────────────────────────────────────────
+    // Accepts the token via two mechanisms (in priority order):
+    //   1. socket.handshake.auth.token  (sent explicitly by the Admin client)
+    //   2. admin_accessToken cookie in the handshake Cookie header (fallback)
     io.use(async (socket, next) => {
         try {
-            const cookieHeader = socket.handshake.headers.cookie
-            const cookies = parseCookies(cookieHeader)
-            const token = cookies['admin_accessToken']
+            let token: string | undefined
+
+            // 1. Explicit auth token from handshake (preferred)
+            if (socket.handshake.auth && typeof socket.handshake.auth.token === 'string') {
+                token = socket.handshake.auth.token
+                logger.info(`Socket auth via handshake.auth.token (id: ${socket.id})`)
+            }
+
+            // 2. Fall back to cookie header
+            if (!token) {
+                const cookieHeader = socket.handshake.headers.cookie
+                const cookies = parseCookies(cookieHeader)
+                token = cookies['admin_accessToken']
+                if (token) {
+                    logger.info(`Socket auth via cookie header (id: ${socket.id})`)
+                }
+            }
 
             if (!token) {
-                logger.warn('Socket connection rejected: No admin_accessToken token provided')
+                logger.warn(`Socket connection rejected — no token provided (id: ${socket.id})`)
                 return next(new Error('Authentication error: No token'))
             }
 
             const decoded = jwt.verifyToken(token, config.TOKENS.ACCESS.SECRET) as IDecryptedJwt
             if (!decoded || !decoded.userId) {
-                logger.warn('Socket connection rejected: Invalid token structure')
+                logger.warn(`Socket connection rejected — invalid token structure (id: ${socket.id})`)
                 return next(new Error('Authentication error: Invalid token'))
             }
 
             const user = await userRepository.findUserById(decoded.userId)
             if (!user || (user.role !== EUserRoles.ADMIN && user.role !== EUserRoles.STAFF)) {
-                logger.warn(`Socket connection rejected: User not authorized (Role: ${user?.role})`)
+                logger.warn(`Socket connection rejected — unauthorized role (id: ${socket.id}, role: ${user?.role})`)
                 return next(new Error('Authentication error: Unauthorized'))
             }
 
-            // Store authenticated user inside socket data object
             socket.data.user = user
+            logger.info(`Socket authenticated: ${user.name} (${user.role}, id: ${socket.id})`)
             next()
         } catch (error) {
-            logger.error('Socket authentication middleware error:', { meta: error })
+            logger.error('Socket authentication error:', { meta: error })
             next(new Error('Authentication error'))
         }
     })
 
     io.on('connection', (socket) => {
-        logger.info(`Socket client connected: ${socket.id} (User: ${socket.data.user?.name}, Role: ${socket.data.user?.role})`)
+        logger.info(`Socket connected: ${socket.id} — ${socket.data.user?.name} (${socket.data.user?.role})`)
 
-        socket.on('disconnect', () => {
-            logger.info(`Socket client disconnected: ${socket.id}`)
+        socket.on('disconnect', (reason) => {
+            logger.info(`Socket disconnected: ${socket.id} — reason: ${reason}`)
         })
     })
 
@@ -96,12 +126,18 @@ export const getIo = (): SocketServer => {
     return io
 }
 
+/**
+ * Emits the order:new event to all connected authenticated clients.
+ * Called ONLY after the order is successfully persisted to the database.
+ */
 export const emitNewOrder = (order: any) => {
     try {
         const ioInstance = getIo()
+        const connectedClients = ioInstance.engine.clientsCount
+        logger.info(`[order:new] Emitting for Order #${order.orderNumber} to ${connectedClients} connected client(s)`)
         ioInstance.emit('order:new', order)
-        logger.info(`Emitted order:new event for Order #${order.orderNumber}`)
     } catch (error) {
-        logger.error('Failed to emit order:new event:', { meta: error })
+        // Non-fatal: order is already in the DB; the kitchen will get it via REST polling
+        logger.error('Failed to emit order:new:', { meta: error })
     }
 }
