@@ -66,6 +66,17 @@ export default {
     },
 
     updateOrderStatusById: (id: string, status: string) => {
-        return orderModel.findByIdAndUpdate(id, { status }, { new: true }).lean()
+        const update: Record<string, any> = { status }
+        if (status === 'completed') {
+            update.completedAt = new Date()
+        }
+        return orderModel.findByIdAndUpdate(id, update, { new: true }).lean()
+    },
+
+    findCompletedOrders: () => {
+        return orderModel
+            .find({ status: 'completed' })
+            .sort({ completedAt: -1, createdAt: -1 })
+            .lean()
     }
 }

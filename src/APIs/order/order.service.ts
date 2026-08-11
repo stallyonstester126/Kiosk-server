@@ -384,6 +384,17 @@ export const getKitchenOrdersService = async () => {
     }
 }
 
+/**
+ * Returns completed kitchen orders sorted by completedAt DESC, fallback to createdAt DESC.
+ */
+export const getCompletedOrdersService = async () => {
+    const orders = await orderRepository.findCompletedOrders()
+    return {
+        success: true,
+        data: orders
+    }
+}
+
 export const updateOrderStatusService = async (id: string, newStatus: string) => {
     const order = await orderRepository.findOrderById(id)
     if (!order) {

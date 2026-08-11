@@ -31,7 +31,8 @@ export interface IOrder {
     total: number
     paymentMethod: 'cash' | 'card'
     paymentStatus: 'pending' | 'paid' | 'failed'
-    status: 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+    status: 'received' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+    completedAt?: Date | null
 }
 
 export interface IOrderWithId extends IOrder {
@@ -63,7 +64,7 @@ export interface ICreateOrderRequest extends Request {
 }
 
 export interface IUpdateOrderStatusPayload {
-    status: 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+    status: 'received' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled'
 }
 
 export interface IUpdateOrderStatusRequest extends Request {

@@ -9,6 +9,7 @@ import {
     getAllOrdersService,
     getOrderByIdService,
     getKitchenOrdersService,
+    getCompletedOrdersService,
     updateOrderStatusService,
     exportSalesReportService,
     exportTransactionsReportService
@@ -74,6 +75,21 @@ export default {
     getKitchenOrders: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
         try {
             const result = await getKitchenOrdersService()
+            if (result.success === true) {
+                httpResponse(response, request, 200, responseMessage.SUCCESS, result.data)
+            }
+        } catch (error: unknown) {
+            if (error instanceof CustomError) {
+                httpError(next, error, request, error.statusCode)
+            } else {
+                httpError(next, error, request, 500)
+            }
+        }
+    }),
+
+    getCompletedOrders: asyncHandler(async (request: Request, response: Response, next: NextFunction) => {
+        try {
+            const result = await getCompletedOrdersService()
             if (result.success === true) {
                 httpResponse(response, request, 200, responseMessage.SUCCESS, result.data)
             }

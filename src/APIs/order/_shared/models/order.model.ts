@@ -112,6 +112,10 @@ const orderSchema = new mongoose.Schema(
             type: String,
             enum: ['received', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'],
             default: 'received'
+        },
+        completedAt: {
+            type: Date,
+            default: null
         }
     },
     { timestamps: true }
@@ -120,5 +124,6 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ orderNumber: 1 })
 orderSchema.index({ status: 1 })
 orderSchema.index({ createdAt: -1 })
+orderSchema.index({ completedAt: -1 })
 
 export default mongoose.model('Order', orderSchema)

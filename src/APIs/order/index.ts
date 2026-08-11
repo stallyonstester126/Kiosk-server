@@ -18,6 +18,9 @@ router.route('/').post(orderController.createOrder)
 // Admin + Staff with 'kitchen' permission: kitchen queue
 router.route('/kitchen').get(rateLimiter, requirePermission('kitchen'), orderController.getKitchenOrders)
 
+// Admin + Staff with 'kitchen' permission: completed kitchen orders
+router.route('/completed').get(rateLimiter, requirePermission('kitchen'), orderController.getCompletedOrders)
+
 // Admin exports
 router.route('/export/sales').get(rateLimiter, requirePermission('sales-report'), orderController.exportSalesReport)
 router.route('/export/transactions').get(rateLimiter, requirePermission('transactions'), orderController.exportTransactionsReport)
