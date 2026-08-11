@@ -332,129 +332,197 @@ export const exportTransactionsReportService = async (filter: Record<string, any
 
         rows.push([])
         rows.push(['MONTHLY SALES BREAKDOWN'])
-        rows.push(['Month', 'Transactions', 'Net Sales', 'Profit'])
-        monthlyBreakdown.forEach(row => {
-            rows.push([row.month, row.transactions, moneyFormat(row.netSales), row.profit])
+        rows.push(['Month', 'Transactions', 'Gross Sales', 'Discounts', 'Tax', 'Net Sales', 'AOV'])
+        const richMonthlyForCsv: Record<string, { count: number; grossSales: number; discounts: number; tax: number; netSales: number }> = {}
+        orders.forEach((o: any) => {
+            const d = new Date(o.createdAt)
+            const sk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+            if (!richMonthlyForCsv[sk]) richMonthlyForCsv[sk] = { count: 0, grossSales: 0, discounts: 0, tax: 0, netSales: 0 }
+            richMonthlyForCsv[sk].count      += 1
+            richMonthlyForCsv[sk].grossSales += (o.subtotal_before_discount ?? o.subtotal ?? 0)
+            richMonthlyForCsv[sk].discounts  += (o.discount_amount ?? 0)
+            richMonthlyForCsv[sk].tax        += (o.tax_after_discount ?? o.tax ?? 0)
+            richMonthlyForCsv[sk].netSales   += (o.grand_total ?? o.total ?? 0)
+        })
+        const MONTHS_CSV = ['January','February','March','April','May','June','July','August','September','October','November','December']
+        Object.entries(richMonthlyForCsv).sort(([a],[b]) => a.localeCompare(b)).forEach(([sk, g]) => {
+            const [yr, mo] = sk.split('-')
+            const rowAov = g.count > 0 ? g.netSales / g.count : 0
+            rows.push([`${MONTHS_CSV[Number(mo)-1]} ${yr}`, g.count, moneyFormat(g.grossSales), `-${moneyFormat(g.discounts)}`, moneyFormat(g.tax), moneyFormat(g.netSales), moneyFormat(rowAov)])
         })
 
         const content = generateCSV(headers, rows)
         return { type: 'csv', content }
     } else if (exportType === 'xlsx') {
         const workbook = new ExcelJS.Workbook()
-        
-        // Sheet 1: Analytics Summary
-        const summarySheet = workbook.addWorksheet('Analytics Summary')
-        summarySheet.addRow(['Analytics Summary'])
-        summarySheet.getRow(1).font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFF5511E' } }
-        summarySheet.addRow([])
-        
-        summarySheet.addRow(['Metric', 'Value'])
-        summarySheet.getRow(3).font = { bold: true }
-        
-        summarySheet.addRow(['Date Range', dateRange])
-        summarySheet.addRow(['Total Transactions', orders.length])
-        summarySheet.addRow(['Gross Sales', moneyFormat(grossSales)])
-        summarySheet.addRow(['Total Discounts', `-${moneyFormat(totalDiscounts)}`])
-        summarySheet.addRow(['Total Tax', moneyFormat(totalTax)])
-        summarySheet.addRow(['Net Sales', moneyFormat(netSales)])
-        summarySheet.addRow(['Profit', 'Profit data unavailable'])
-        
-        summarySheet.columns = [
-            { width: 25 },
-            { width: 35 }
+        workbook.creator = 'QuickCrave POS'
+        workbook.created = new Date()
+
+        // ── Sheet 1: Transactions Data ────────────────────────────────────────
+        const dataSheet = workbook.addWorksheet('Transactions')
+        const txColumns = [
+            { header: 'Transaction ID',     key: 'transactionId',    width: 28 },
+            { header: 'Order Number',        key: 'orderNumber',      width: 18 },
+            { header: 'Date & Time',         key: 'date',             width: 24 },
+            { header: 'Customer',            key: 'customer',         width: 22 },
+            { header: 'Order Type',          key: 'orderType',        width: 14 },
+            { header: 'Payment Method',      key: 'paymentMethod',    width: 18 },
+            { header: 'Payment Status',      key: 'status',           width: 16 },
+            { header: 'Items',               key: 'items',            width: 40 },
+            { header: 'Subtotal (Gross)',     key: 'subtotal',         width: 18 },
+            { header: 'Discount',            key: 'discount',         width: 16 },
+            { header: 'Coupon Code',         key: 'coupon',           width: 16 },
+            { header: 'Tax (10%)',           key: 'tax',              width: 14 },
+            { header: 'Net Sales (Total)',   key: 'total',            width: 20 },
         ]
-        
-        // Sheet 2: Monthly Breakdown
-        const monthlySheet = workbook.addWorksheet('Monthly Breakdown')
-        monthlySheet.addRow(['Monthly Sales Performance'])
-        monthlySheet.getRow(1).font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFF5511E' } }
-        monthlySheet.addRow([])
-        
-        monthlySheet.addRow(['Month', 'Transactions', 'Net Sales', 'Profit'])
-        monthlySheet.getRow(3).font = { bold: true }
-        
-        monthlyBreakdown.forEach(row => {
-            monthlySheet.addRow([
-                row.month,
-                row.transactions,
-                moneyFormat(row.netSales),
-                row.profit
-            ])
-        })
-        
-        monthlySheet.columns = [
-            { width: 15 },
-            { width: 15 },
-            { width: 20 },
-            { width: 25 }
-        ]
-        
-        // Sheet 3: Transactions Data (Exactly matches previous single-sheet export columns and data!)
-        const dataSheet = workbook.addWorksheet('Transactions Data')
-        const columns = [
-            { header: 'Transaction ID', key: 'transactionId' },
-            { header: 'Order Number', key: 'orderNumber' },
-            { header: 'Date', key: 'date' },
-            { header: 'Customer', key: 'customer' },
-            { header: 'Payment Method', key: 'paymentMethod' },
-            { header: 'Transaction Status', key: 'status' },
-            { header: 'Subtotal', key: 'amountFormatted' },
-            { header: 'Tax', key: 'taxFormatted' },
-            { header: 'Discount', key: 'discountFormatted' },
-            { header: 'Final Amount', key: 'totalFormatted' },
-            { header: 'Coupon Code', key: 'coupon' }
-        ]
-        
-        dataSheet.columns = columns
-        
-        // Header row styling
-        const headerRow = dataSheet.getRow(1)
-        headerRow.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } }
-        headerRow.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFF5511E' } // Brand Orange
-        }
-        headerRow.alignment = { vertical: 'middle', horizontal: 'left' }
-        headerRow.height = 24
-        
+
+        dataSheet.columns = txColumns
         dataSheet.views = [{ state: 'frozen', ySplit: 1 }]
-        
-        const formattedData = data.map(d => ({
-            ...d,
-            amountFormatted: moneyFormat(d.amount),
-            taxFormatted: moneyFormat(d.tax),
-            discountFormatted: moneyFormat(d.discount),
-            totalFormatted: moneyFormat(d.total)
+
+        // Styled header row
+        const txHeader = dataSheet.getRow(1)
+        txHeader.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } }
+        txHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5511E' } }
+        txHeader.alignment = { vertical: 'middle', horizontal: 'center' }
+        txHeader.height = 22
+
+        // Build enriched transaction rows with item list from original orders
+        const txRows = orders.map((o: any) => ({
+            transactionId: o._id.toString(),
+            orderNumber:   o.orderNumber,
+            date:          new Date(o.createdAt).toLocaleString(),
+            customer:      o.customerName || '—',
+            orderType:     o.orderType === 'eat-in' ? 'Dine In' : o.orderType === 'take-away' ? 'Take Away' : '—',
+            paymentMethod: o.paymentMethod || '—',
+            status:        o.paymentStatus || '—',
+            items:         (o.items || []).map((i: any) => `${i.name} ×${i.quantity}`).join(', '),
+            subtotal:      moneyFormat(o.subtotal_before_discount ?? o.subtotal ?? 0),
+            discount:      o.discount_amount ? `-${moneyFormat(o.discount_amount)}` : '—',
+            coupon:        o.coupon_code || '—',
+            tax:           moneyFormat(o.tax_after_discount ?? o.tax ?? 0),
+            total:         moneyFormat(o.grand_total ?? o.total ?? 0),
         }))
-        
-        formattedData.forEach((item) => {
-            dataSheet.addRow(item)
+
+        txRows.forEach((item: Record<string, any>) => {
+            const row = dataSheet.addRow(item)
+            row.alignment = { vertical: 'middle', wrapText: false }
         })
-        
-        dataSheet.columns.forEach((column) => {
-            let maxLen = 0
-            column.eachCell!({ includeEmpty: true }, (cell) => {
-                const valLen = cell.value ? String(cell.value).length : 0
-                if (valLen > maxLen) {
-                    maxLen = valLen
-                }
+
+        // Auto-width columns
+        txColumns.forEach((col, idx) => {
+            const column = dataSheet.getColumn(idx + 1)
+            let maxLen = String(col.header).length
+            column.eachCell({ includeEmpty: false }, (cell) => {
+                const len = cell.value ? String(cell.value).length : 0
+                if (len > maxLen) maxLen = len
             })
-            column.width = Math.max(maxLen + 4, 12)
+            column.width = Math.min(Math.max(maxLen + 3, col.width), 55)
         })
-        
-        if (summaryTotals && summaryTotals.length > 0) {
-            dataSheet.addRow([]) // Spacer row
-            summaryTotals.forEach((sum) => {
-                const row = dataSheet.addRow({
-                    [columns[0].key]: sum.label,
-                    [columns[1].key]: sum.value
-                })
-                row.getCell(1).font = { bold: true }
-                row.getCell(2).font = { bold: true }
-            })
+
+        // Totals footer
+        dataSheet.addRow([])
+        const totalsLabel = dataSheet.addRow({ transactionId: '── TOTALS ──', subtotal: moneyFormat(grossSales), discount: `-${moneyFormat(totalDiscounts)}`, tax: moneyFormat(totalTax), total: moneyFormat(netSales) })
+        totalsLabel.font = { bold: true }
+        totalsLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E0' } }
+
+        // ── Sheet 2: Analytics Summary ────────────────────────────────────────
+        const successfulTx = orders.filter((o: any) => o.paymentStatus === 'paid').length
+        const cancelledTx  = orders.filter((o: any) => o.status === 'cancelled').length
+        const cashOrders   = orders.filter((o: any) => o.paymentMethod === 'cash').length
+        const cardOrders   = orders.filter((o: any) => o.paymentMethod === 'card').length
+        const couponOrders = orders.filter((o: any) => o.coupon_code).length
+        const aov = orders.length > 0 ? netSales / orders.length : 0
+
+        const summarySheet = workbook.addWorksheet('Analytics Summary')
+        summarySheet.getColumn(1).width = 35
+        summarySheet.getColumn(2).width = 28
+
+        const addSummaryTitle = (label: string) => {
+            summarySheet.addRow([])
+            const r = summarySheet.addRow([label])
+            r.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFF5511E' } }
+            r.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E0' } }
         }
-        
+        const addSummaryRow = (label: string, value: string | number) => {
+            const r = summarySheet.addRow([label, value])
+            r.getCell(1).font = { bold: true }
+            r.alignment = { horizontal: 'left' }
+        }
+
+        const mainTitle = summarySheet.addRow(['Transactions & Analytics Report'])
+        mainTitle.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFF5511E' } }
+        addSummaryRow('Date Range', dateRange)
+        addSummaryRow('Report Generated', new Date().toLocaleString())
+
+        addSummaryTitle('SALES OVERVIEW')
+        addSummaryRow('Gross Sales (before discounts)', moneyFormat(grossSales))
+        addSummaryRow('Total Discounts / Coupons', `-${moneyFormat(totalDiscounts)}`)
+        addSummaryRow('Tax Collected (10%)', moneyFormat(totalTax))
+        addSummaryRow('Net Sales (after discounts + tax)', moneyFormat(netSales))
+        addSummaryRow('Average Order Value (AOV)', moneyFormat(aov))
+
+        addSummaryTitle('TRANSACTIONS')
+        addSummaryRow('Total Transactions', orders.length)
+        addSummaryRow('Successful (Paid)', successfulTx)
+        addSummaryRow('Cancelled Orders', cancelledTx)
+
+        addSummaryTitle('PAYMENT METHODS')
+        addSummaryRow('Cash Orders', cashOrders)
+        addSummaryRow('Card Orders', cardOrders)
+
+        addSummaryTitle('COUPON / DISCOUNT IMPACT')
+        addSummaryRow('Orders with Coupon', couponOrders)
+        addSummaryRow('Orders without Coupon', orders.length - couponOrders)
+        addSummaryRow('Total Discount Applied', `-${moneyFormat(totalDiscounts)}`)
+
+        // ── Sheet 3: Monthly Breakdown ─────────────────────────────────────────
+        const richMonthlyGroups: Record<string, {
+            count: number; grossSales: number; discounts: number; tax: number; netSales: number
+        }> = {}
+        orders.forEach((o: any) => {
+            const d = new Date(o.createdAt)
+            const sk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+            if (!richMonthlyGroups[sk]) richMonthlyGroups[sk] = { count: 0, grossSales: 0, discounts: 0, tax: 0, netSales: 0 }
+            richMonthlyGroups[sk].count      += 1
+            richMonthlyGroups[sk].grossSales += (o.subtotal_before_discount ?? o.subtotal ?? 0)
+            richMonthlyGroups[sk].discounts  += (o.discount_amount ?? 0)
+            richMonthlyGroups[sk].tax        += (o.tax_after_discount ?? o.tax ?? 0)
+            richMonthlyGroups[sk].netSales   += (o.grand_total ?? o.total ?? 0)
+        })
+
+        const monthlySheet = workbook.addWorksheet('Monthly Breakdown')
+        const mthTitle = monthlySheet.addRow(['Monthly Sales Performance'])
+        mthTitle.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFF5511E' } }
+        monthlySheet.addRow([])
+
+        const mthHeader = monthlySheet.addRow(['Month', 'Transactions', 'Gross Sales', 'Discounts', 'Tax', 'Net Sales', 'AOV'])
+        mthHeader.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+        mthHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5511E' } }
+        mthHeader.alignment = { horizontal: 'center' }
+
+        Object.entries(richMonthlyGroups)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([sk, g]) => {
+                const [yr, mo] = sk.split('-')
+                const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+                const monthLabel = `${MONTHS[Number(mo) - 1]} ${yr}`
+                const rowAov = g.count > 0 ? g.netSales / g.count : 0
+                monthlySheet.addRow([
+                    monthLabel,
+                    g.count,
+                    moneyFormat(g.grossSales),
+                    `-${moneyFormat(g.discounts)}`,
+                    moneyFormat(g.tax),
+                    moneyFormat(g.netSales),
+                    moneyFormat(rowAov),
+                ])
+            })
+
+        monthlySheet.columns = [
+            { width: 20 }, { width: 14 }, { width: 20 },
+            { width: 18 }, { width: 16 }, { width: 20 }, { width: 18 }
+        ]
+
         const content = await workbook.xlsx.writeBuffer()
         return { type: 'xlsx', content }
     } else {
