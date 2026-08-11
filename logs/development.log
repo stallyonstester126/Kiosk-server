@@ -195712,3 +195712,164 @@
         }
     }
 }
+{
+    "level": "INFO",
+    "timestamp": "2026-08-11T08:41:55.617Z",
+    "message": "Database connection established",
+    "meta": {
+        "CONNECTION_NAME": "KioskPos"
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-11T08:41:55.704Z",
+    "message": "Rate limiter initiated",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-11T08:41:55.705Z",
+    "message": "Application started on port 3000",
+    "meta": {
+        "SERVER_URL": "https://kiosk-server-production-e08d.up.railway.app"
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-11T08:43:00.315Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 401,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/orders/kitchen"
+        },
+        "message": "You are not allowed to perform this task",
+        "data": null,
+        "trace": {
+            "error": "Error: You are not allowed to perform this task\n    at D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:30:32\n    at Generator.next (<anonymous>)\n    at D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:8:71\n    at new Promise (<anonymous>)\n    at __awaiter (D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:4:12)\n    at D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:19:91\n    at D:\\POS Kiosk Application\\Server\\src\\handlers\\async.ts:5:25\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\middlewares\\rateLimiter.ts:11:16)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:284:15\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)"
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-11T08:43:08.217Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 401,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/orders/completed"
+        },
+        "message": "You are not allowed to perform this task",
+        "data": null,
+        "trace": {
+            "error": "Error: You are not allowed to perform this task\n    at D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:30:32\n    at Generator.next (<anonymous>)\n    at D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:8:71\n    at new Promise (<anonymous>)\n    at __awaiter (D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:4:12)\n    at D:\\POS Kiosk Application\\Server\\src\\middlewares\\requirePermission.ts:19:91\n    at D:\\POS Kiosk Application\\Server\\src\\handlers\\async.ts:5:25\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\middlewares\\rateLimiter.ts:11:16)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:284:15\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)"
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-11T08:43:20.853Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)\n    at SendStream.onStatError (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:417:12)\n    at onstat (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:721:26)\n    at FSReqCallback.oncomplete (node:fs:194:21)"
+        }
+    }
+}
+{
+    "level": "INFO",
+    "timestamp": "2026-08-11T08:43:38.064Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/admin/login"
+        },
+        "message": "Login successful",
+        "data": {
+            "success": true,
+            "admin": {
+                "_id": "6a6c407323e7a5700ad0925d",
+                "name": "Seeded Admin",
+                "email": "admin@example.com",
+                "role": "admin",
+                "permissions": []
+            }
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-11T08:57:59.865Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)\n    at SendStream.onStatError (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:417:12)\n    at onstat (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:721:26)\n    at FSReqCallback.oncomplete (node:fs:194:21)"
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-11T09:12:36.817Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)\n    at SendStream.onStatError (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:417:12)\n    at onstat (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:721:26)\n    at FSReqCallback.oncomplete (node:fs:194:21)"
+        }
+    }
+}
+{
+    "level": "ERROR",
+    "timestamp": "2026-08-11T10:08:03.610Z",
+    "message": "Controller Response",
+    "meta": {
+        "success": false,
+        "statusCode": 404,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "http://testfiles.ic.net.uk/20MB.zip"
+        },
+        "message": "Route is not found",
+        "data": null,
+        "trace": {
+            "error": "Error: Route is not found\n    at exports.default (D:\\POS Kiosk Application\\Server\\src\\handlers\\notFound.ts:7:15)\n    at Layer.handle [as handle_request] (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:286:9\n    at router.process_params (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\POS Kiosk Application\\Server\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\serve-static\\index.js:121:7)\n    at SendStream.emit (node:events:508:28)\n    at SendStream.emit (node:domain:489:12)\n    at SendStream.error (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:270:17)\n    at SendStream.onStatError (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:417:12)\n    at onstat (D:\\POS Kiosk Application\\Server\\node_modules\\send\\index.js:721:26)\n    at FSReqCallback.oncomplete (node:fs:194:21)"
+        }
+    }
+}

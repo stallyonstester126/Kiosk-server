@@ -6,6 +6,7 @@ import validate from './validation/validations'
 import { calculateOrderTotal } from './order.utils'
 import { ICreateOrderBody } from './order.interface'
 import { generateCSV, generateExcel, generatePDF } from '../../utils/export.utils'
+import ExcelJS from 'exceljs'
 
 // FIFO transition map: current status → allowed next statuses
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -244,6 +245,38 @@ export const exportTransactionsReportService = async (filter: Record<string, any
         coupon: o.coupon_code || '—'
     }))
 
+    const grossSales = orders.reduce((sum: number, o: any) => sum + (o.subtotal_before_discount ?? o.subtotal ?? 0), 0)
+    const totalDiscounts = orders.reduce((sum: number, o: any) => sum + (o.discount_amount ?? 0), 0)
+    const totalTax = orders.reduce((sum: number, o: any) => sum + (o.tax_after_discount ?? o.tax ?? 0), 0)
+    const netSales = orders.reduce((sum: number, o: any) => sum + (o.grand_total ?? o.total ?? 0), 0)
+
+    const monthlyGroups: Record<string, { count: number; netSales: number }> = {}
+    orders.forEach((o: any) => {
+        const date = new Date(o.createdAt)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const monthKey = `${year}-${month}`
+        
+        if (!monthlyGroups[monthKey]) {
+            monthlyGroups[monthKey] = { count: 0, netSales: 0 }
+        }
+        monthlyGroups[monthKey].count += 1
+        monthlyGroups[monthKey].netSales += (o.grand_total ?? o.total ?? 0)
+    })
+    
+    const monthlyBreakdown = Object.entries(monthlyGroups)
+        .map(([month, data]) => ({
+            month,
+            transactions: data.count,
+            netSales: data.netSales,
+            profit: 'N/A'
+        }))
+        .sort((a, b) => a.month.localeCompare(b.month))
+
+    const dateRange = filter.startDate && filter.endDate 
+        ? `${filter.startDate} to ${filter.endDate}` 
+        : 'All Time'
+
     const successfulTransactions = data.filter(d => d.status === 'paid').length
     const failedTransactions = data.filter(d => d.status === 'failed').length
 
@@ -297,9 +330,67 @@ export const exportTransactionsReportService = async (filter: Record<string, any
             rows.push([s.label, typeof s.value === 'number' && !s.label.includes('Transactions') ? moneyFormat(s.value) : s.value])
         })
 
+        rows.push([])
+        rows.push(['MONTHLY SALES BREAKDOWN'])
+        rows.push(['Month', 'Transactions', 'Net Sales', 'Profit'])
+        monthlyBreakdown.forEach(row => {
+            rows.push([row.month, row.transactions, moneyFormat(row.netSales), row.profit])
+        })
+
         const content = generateCSV(headers, rows)
         return { type: 'csv', content }
     } else if (exportType === 'xlsx') {
+        const workbook = new ExcelJS.Workbook()
+        
+        // Sheet 1: Analytics Summary
+        const summarySheet = workbook.addWorksheet('Analytics Summary')
+        summarySheet.addRow(['Analytics Summary'])
+        summarySheet.getRow(1).font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFF5511E' } }
+        summarySheet.addRow([])
+        
+        summarySheet.addRow(['Metric', 'Value'])
+        summarySheet.getRow(3).font = { bold: true }
+        
+        summarySheet.addRow(['Date Range', dateRange])
+        summarySheet.addRow(['Total Transactions', orders.length])
+        summarySheet.addRow(['Gross Sales', moneyFormat(grossSales)])
+        summarySheet.addRow(['Total Discounts', `-${moneyFormat(totalDiscounts)}`])
+        summarySheet.addRow(['Total Tax', moneyFormat(totalTax)])
+        summarySheet.addRow(['Net Sales', moneyFormat(netSales)])
+        summarySheet.addRow(['Profit', 'Profit data unavailable'])
+        
+        summarySheet.columns = [
+            { width: 25 },
+            { width: 35 }
+        ]
+        
+        // Sheet 2: Monthly Breakdown
+        const monthlySheet = workbook.addWorksheet('Monthly Breakdown')
+        monthlySheet.addRow(['Monthly Sales Performance'])
+        monthlySheet.getRow(1).font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFF5511E' } }
+        monthlySheet.addRow([])
+        
+        monthlySheet.addRow(['Month', 'Transactions', 'Net Sales', 'Profit'])
+        monthlySheet.getRow(3).font = { bold: true }
+        
+        monthlyBreakdown.forEach(row => {
+            monthlySheet.addRow([
+                row.month,
+                row.transactions,
+                moneyFormat(row.netSales),
+                row.profit
+            ])
+        })
+        
+        monthlySheet.columns = [
+            { width: 15 },
+            { width: 15 },
+            { width: 20 },
+            { width: 25 }
+        ]
+        
+        // Sheet 3: Transactions Data (Exactly matches previous single-sheet export columns and data!)
+        const dataSheet = workbook.addWorksheet('Transactions Data')
         const columns = [
             { header: 'Transaction ID', key: 'transactionId' },
             { header: 'Order Number', key: 'orderNumber' },
@@ -313,7 +404,22 @@ export const exportTransactionsReportService = async (filter: Record<string, any
             { header: 'Final Amount', key: 'totalFormatted' },
             { header: 'Coupon Code', key: 'coupon' }
         ]
-
+        
+        dataSheet.columns = columns
+        
+        // Header row styling
+        const headerRow = dataSheet.getRow(1)
+        headerRow.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } }
+        headerRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF5511E' } // Brand Orange
+        }
+        headerRow.alignment = { vertical: 'middle', horizontal: 'left' }
+        headerRow.height = 24
+        
+        dataSheet.views = [{ state: 'frozen', ySplit: 1 }]
+        
         const formattedData = data.map(d => ({
             ...d,
             amountFormatted: moneyFormat(d.amount),
@@ -321,13 +427,35 @@ export const exportTransactionsReportService = async (filter: Record<string, any
             discountFormatted: moneyFormat(d.discount),
             totalFormatted: moneyFormat(d.total)
         }))
-
-        const formattedSummary = summaryTotals.map(s => ({
-            label: s.label,
-            value: typeof s.value === 'number' && !s.label.includes('Transactions') ? moneyFormat(s.value) : s.value
-        }))
-
-        const content = await generateExcel('Transactions Report', columns, formattedData, formattedSummary)
+        
+        formattedData.forEach((item) => {
+            dataSheet.addRow(item)
+        })
+        
+        dataSheet.columns.forEach((column) => {
+            let maxLen = 0
+            column.eachCell!({ includeEmpty: true }, (cell) => {
+                const valLen = cell.value ? String(cell.value).length : 0
+                if (valLen > maxLen) {
+                    maxLen = valLen
+                }
+            })
+            column.width = Math.max(maxLen + 4, 12)
+        })
+        
+        if (summaryTotals && summaryTotals.length > 0) {
+            dataSheet.addRow([]) // Spacer row
+            summaryTotals.forEach((sum) => {
+                const row = dataSheet.addRow({
+                    [columns[0].key]: sum.label,
+                    [columns[1].key]: sum.value
+                })
+                row.getCell(1).font = { bold: true }
+                row.getCell(2).font = { bold: true }
+            })
+        }
+        
+        const content = await workbook.xlsx.writeBuffer()
         return { type: 'xlsx', content }
     } else {
         // PDF
@@ -358,7 +486,14 @@ export const exportTransactionsReportService = async (filter: Record<string, any
             value: typeof s.value === 'number' && !s.label.includes('Transactions') ? moneyFormat(s.value) : s.value
         }))
 
-        const content = await generatePDF('Transactions Report', columns, formattedData, formattedSummary, filterList)
+        const content = await generatePDF('Transactions Report', columns, formattedData, formattedSummary, filterList, {
+            monthlyBreakdown,
+            grossSales,
+            totalDiscounts,
+            totalTax,
+            netSales,
+            dateRange
+        })
         return { type: 'pdf', content }
     }
 }

@@ -102,7 +102,15 @@ export function generatePDF(
     columns: PDFColumn[],
     data: any[],
     summaryData: { label: string; value: any }[],
-    filters: { label: string; value: string }[]
+    filters: { label: string; value: string }[],
+    analytics?: {
+        monthlyBreakdown: { month: string; transactions: number; netSales: number; profit: string }[]
+        grossSales: number
+        totalDiscounts: number
+        totalTax: number
+        netSales: number
+        dateRange: string
+    }
 ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
         const chunks: Buffer[] = []
@@ -112,13 +120,95 @@ export function generatePDF(
         doc.on('end', () => resolve(Buffer.concat(chunks as Uint8Array[])))
         doc.on('error', (err) => reject(err))
 
-        // Header Title Block
-        doc.font('Helvetica-Bold').fontSize(16).fillColor('#FFA600').text('QUICKCRAVE POS', 30, 30)
-        doc.font('Helvetica-Bold').fontSize(12).fillColor('#333333').text(title, 30, 48)
-        doc.font('Helvetica').fontSize(7).fillColor('#777777').text(`Generated at: ${new Date().toLocaleString()}`, 30, 62)
+        const moneyFormat = (val: number) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val)
+        }
+
+        let currentY = 30
+
+        if (analytics) {
+            // Header Title Block
+            doc.font('Helvetica-Bold').fontSize(16).fillColor('#F5511E').text('QUICKCRAVE POS', 30, 30)
+            doc.font('Helvetica-Bold').fontSize(12).fillColor('#333333').text('Transactions & Analytics Summary', 30, 48)
+            doc.font('Helvetica').fontSize(7.5).fillColor('#777777').text(`Generated at: ${new Date().toLocaleString()}`, 30, 62)
+            
+            // Date Range & Filters
+            currentY = 75
+            doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#555555').text(`Date Range: ${analytics.dateRange}`, 30, currentY)
+            currentY += 15
+
+            // Summary cards
+            const cardWidth = 115
+            const cardHeight = 45
+            const cardX = 30
+            const cards = [
+                { label: 'Net Sales', value: moneyFormat(analytics.netSales), color: '#F5511E' },
+                { label: 'Gross Sales', value: moneyFormat(analytics.grossSales), color: '#10B981' },
+                { label: 'Discounts', value: `-${moneyFormat(analytics.totalDiscounts)}`, color: '#EF4444' },
+                { label: 'Tax', value: moneyFormat(analytics.totalTax), color: '#3B82F6' },
+                { label: 'Total Transactions', value: String(data.length), color: '#6B7280' },
+                { label: 'Profit', value: 'Profit data unavailable', color: '#8B5CF6' }
+            ]
+
+            cards.forEach((card, idx) => {
+                const x = cardX + (idx % 4) * (cardWidth + 15)
+                const y = currentY + Math.floor(idx / 4) * (cardHeight + 10)
+                
+                // Draw background card box
+                doc.rect(x, y, cardWidth, cardHeight).fillColor('#F9FAFB').fill().strokeColor('#E5E7EB').lineWidth(1).stroke()
+                // Left indicator border
+                doc.rect(x, y, 4, cardHeight).fillColor(card.color).fill()
+                
+                // Label
+                doc.font('Helvetica').fontSize(7.5).fillColor('#4B5563').text(card.label, x + 10, y + 10)
+                // Value
+                doc.font('Helvetica-Bold').fontSize(11).fillColor('#111827').text(card.value, x + 10, y + 24)
+            })
+
+            currentY += 115
+
+            // Monthly Breakdown Title
+            doc.font('Helvetica-Bold').fontSize(10).fillColor('#111827').text('Monthly Sales Performance', 30, currentY)
+            currentY += 15
+
+            // Table Header for Monthly Breakdown
+            doc.rect(30, currentY, doc.page.width - 60, 14).fill('#F5511E')
+            doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(7.5)
+            doc.text('Month', 35, currentY + 3.5, { width: 100 })
+            doc.text('Transactions', 150, currentY + 3.5, { width: 100, align: 'right' })
+            doc.text('Net Sales', 270, currentY + 3.5, { width: 120, align: 'right' })
+            doc.text('Profit', 410, currentY + 3.5, { width: 120, align: 'right' })
+            currentY += 14
+
+            // Table Rows
+            doc.font('Helvetica').fontSize(7.5).fillColor('#333333')
+            let alternate = false
+            analytics.monthlyBreakdown.forEach((row) => {
+                if (alternate) {
+                    doc.rect(30, currentY, doc.page.width - 60, 12).fillColor('#F9FAFB').fill()
+                }
+                doc.fillColor('#333333')
+                doc.text(row.month, 35, currentY + 2.5, { width: 100 })
+                doc.text(String(row.transactions), 150, currentY + 2.5, { width: 100, align: 'right' })
+                doc.text(moneyFormat(row.netSales), 270, currentY + 2.5, { width: 120, align: 'right' })
+                doc.text(row.profit, 410, currentY + 2.5, { width: 120, align: 'right' })
+                
+                alternate = !alternate
+                currentY += 12
+            })
+
+            // Add new page for transactions data
+            doc.addPage()
+            currentY = 30
+        }
+
+        // Header Title Block for transactions list
+        doc.font('Helvetica-Bold').fontSize(16).fillColor('#F5511E').text('QUICKCRAVE POS', 30, currentY)
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#333333').text(title, 30, currentY + 18)
+        doc.font('Helvetica').fontSize(7).fillColor('#777777').text(`Generated at: ${new Date().toLocaleString()}`, 30, currentY + 32)
 
         // Filters list
-        let currentY = 75
+        currentY += 45
         if (filters.length > 0) {
             doc.font('Helvetica-Bold').fontSize(7).fillColor('#555555').text('Applied Filters: ', 30, currentY)
             const filterStr = filters.map((f) => `${f.label}: ${f.value}`).join('  |  ')
